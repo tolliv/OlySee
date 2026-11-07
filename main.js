@@ -1,4 +1,4 @@
-// v=2611.06a
+// v=2611.07a
 // &id=Fci7CsIwFADQf7lzaUgVodmKgyAqDh3UJeRKSPqiiTcxCeK_i2c8H4ggwIbgSDC2mNWg9Q69z97mMqRUaopOoSJdP1f20hTYm7OgcNZQwQQCCKWLOA9k_yl3cS_767G_nA5Lt0lcN49yS_JuJpXH7gwVDCCAN9u25fD9AQby
 //==================================================================================================
 // Fichier main
