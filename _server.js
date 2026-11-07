@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const os = require('os');
 
-const PORT = 3000; // Vous pouvez choisir un autre port si celui-ci est occupé
+const PORT = 3002; // Vous pouvez choisir un autre port si celui-ci est occupé
 
 // Fonction pour obtenir les adresses IP locales de votre machine
 function getLocalIPAddresses() {
@@ -20,14 +20,18 @@ function getLocalIPAddresses() {
     return addresses;
 }
 
-const server = http.createServer((req, res) => {
-    console.log(`Requête reçue pour : ${req.url}`);
+const server = http.createServer((req, res) =>
+{
+    // Extraire uniquement le chemin du fichier (ignorer tout ce qui est après le ?)
+    const urlPath = req.url.split('?')[0];
+    let filePath = '.' + urlPath;
 
-    // Définir le chemin de base du fichier
-    let filePath = '.' + req.url;
-    if (filePath === './') {
-        filePath = './index.html'; // Servir index.html par défaut pour la racine
+    if (filePath === './')
+    {
+        filePath = './index.html';
     }
+
+    console.log("Fichier : " + filePath);
 
     // Obtenir l'extension du fichier pour définir le Content-Type correct
     const extname = String(path.extname(filePath)).toLowerCase();

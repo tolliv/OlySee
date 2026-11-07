@@ -1,4 +1,4 @@
-/* v=2611.03a */
+/* v=2611.06a */
 /*==================================================================================================
   Il y a deux parties :
   #panTopContainer pour la partie haute de l'écran
@@ -63,7 +63,7 @@ body
   margin-left: auto;
   margin-right: auto;
   max-width: 296px;
-  width: 100%;
+  width: 60%;
   height: auto;
 }
 
@@ -385,9 +385,9 @@ body
   position: absolute;
   left: 10px;
   right: 10px;
-  border-bottom: 4px solid #888;
+  border-bottom: 4px dotted #00F;
   radius: 4px;
-  z-index: 1; /* Ligne restante */
+  z-index: 1; /* Ligne Restant */
 }
 
 /* La ligne horizontale Parcouru */
@@ -400,7 +400,7 @@ body
   border-bottom: 4px solid #00F;
   radius: 4px;
   transition: width 0.5s ease;
-  z-index: 2; /* Ligne trait plein */
+  z-index: 2; /* Ligne Parcouru */
 }
 
 /* Labels de distance sous la barre de progression */
@@ -439,7 +439,7 @@ body
 #txtDistanceRestante
 {
   height: 22px;
-  border-bottom: 3px solid #888;
+  border-bottom: 4px dotted #00F;
 }
 
 

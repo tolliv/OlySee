@@ -1,4 +1,4 @@
-// v=2611.03a
+// v=2611.06a
 //==================================================================================================
 // Gestion des requêtes pour Supabase
 //==================================================================================================
@@ -159,6 +159,7 @@ async function SupabaseWriteNomItineraire(nouveau)
       msg: nouveau
   };
   lRet = await SupabaseWrite(nouveauPoint);
+  return (lRet);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -194,6 +195,23 @@ async function SupabaseEffaceItineraire()
 
 
 //--------------------------------------------------------------------------------------------------
+// Calcule un CRC16 (CCITT) sur un Uint8Array
+//--------------------------------------------------------------------------------------------------
+function calculateCRC16(buffer)
+{
+  let crc = 0xFFFF;
+  for (let i = 0; i < buffer.length; i++)
+  {
+    crc ^= (buffer[i] << 8);
+    for (let j = 0; j < 8; j++)
+    {
+      crc = (crc & 0x8000) ? (crc << 1) ^ 0x1021 : (crc << 1);
+    }
+  }
+  return(crc & 0xFFFF);
+}
+
+//--------------------------------------------------------------------------------------------------
 // Encode et compresse
 //--------------------------------------------------------------------------------------------------
 async function encodeSupabaseConfig(url, key, usr)
@@ -202,25 +220,33 @@ async function encodeSupabaseConfig(url, key, usr)
   {
     const payload = JSON.stringify({ u: url, k: key, i: usr });
 
-    // Compression native (deflate-raw)
+    // Compression
     const stream = new Blob([payload]).stream().pipeThrough(new CompressionStream('deflate-raw'));
     const compressedBuffer = await new Response(stream).arrayBuffer();
     let bytes = new Uint8Array(compressedBuffer);
     for (let i = 0; i < bytes.length; bytes[i++] ^= 0x69);
 
+    // Ajout du CRC à la fin du tableau
+    const crc = calculateCRC16(bytes);
+    const finalBytes = new Uint8Array(bytes.length + 2);
+    finalBytes.set(bytes);
+    finalBytes[bytes.length] = (crc >> 8) & 0xFF;     // Octet de poids fort
+    finalBytes[bytes.length + 1] = crc & 0xFF;        // Octet de poids faible
+
     // Conversion en Base64 URL-safe
     let binary = '';
     const chunkSize = 0x8000;
-    for (let i = 0; i < bytes.length; i += chunkSize)
-        binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+    for (let i = 0; i < finalBytes.length; i += chunkSize)
+    {
+      binary += String.fromCharCode.apply(null, finalBytes.subarray(i, i + chunkSize));
+    }
 
-    const base64 = btoa(binary);
-    return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
   }
-  catch(error)
+  catch (error)
   {
     console.log("Erreur encodeSupabaseConfig : " + error);
-    return("");
+    return ("");
   }
 }
 
@@ -234,16 +260,28 @@ async function decodeSupabaseConfig(encodedStr)
     // Restauration du Base64 standard
     let base64 = encodedStr.replace(/-/g, '+').replace(/_/g, '/');
     while (base64.length % 4) base64 += '=';
-
     const binary = atob(base64);
-    let bytes = new Uint8Array(binary.length);
+    if (binary.length <= 2) throw new Error("Données trop courtes");
+    const allBytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++)
-        bytes[i] = binary.charCodeAt(i) ^0x69;
+    {
+      allBytes[i] = binary.charCodeAt(i);
+    }
+
+    // Séparation des données et du CRC (les 2 derniers octets)
+    const dataBytes = allBytes.slice(0, allBytes.length - 2);
+    const receivedCrc = (allBytes[allBytes.length - 2] << 8) | allBytes[allBytes.length - 1];
+
+    // Vérification de l'intégrité
+    const computedCrc = calculateCRC16(dataBytes);
+    if (computedCrc !== receivedCrc) {
+      throw new Error("Échec de l'intégrité (CRC16 incorrect)");
+    }
 
     // Décompression native
-    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+    for (let i = 0; i < dataBytes.length; dataBytes[i++] ^= 0x69);
+    const stream = new Blob([dataBytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
     const decompressedBuffer = await new Response(stream).arrayBuffer();
-
     const jsonString = new TextDecoder().decode(decompressedBuffer);
     const obj = JSON.parse(jsonString);
 
@@ -253,14 +291,10 @@ async function decodeSupabaseConfig(encodedStr)
       usr: obj.i
     };
   }
-  catch(error)
+  catch (error)
   {
     console.log("Erreur decodeSupabaseConfig : " + error);
-    return {
-      url: "",
-      key: "",
-      usr: ""
-    }
+    return { url: "", key: "", usr: "" };
   }
 }
 

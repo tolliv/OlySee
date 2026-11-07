@@ -1,5 +1,5 @@
-// v=2611.03a
-// &usr=124991&url=https://mgogbhqpbqqxqhxyiwwy.supabase.co/rest/v1/table&key=sb_publishable_6uC_TPJTNLGmA3w1e2ZyXw_YgkaxjAM&admin=1
+// v=2611.06a
+// &id=Fci7CsIwFADQf7lzaUgVodmKgyAqDh3UJeRKSPqiiTcxCeK_i2c8H4ggwIbgSDC2mNWg9Q69z97mMqRUaopOoSJdP1f20hTYm7OgcNZQwQQCCKWLOA9k_yl3cS_767G_nA5Lt0lcN49yS_JuJpXH7gwVDCCAN9u25fD9AQby
 //==================================================================================================
 // Fichier main
 //==================================================================================================
@@ -73,156 +73,9 @@ function DateSupabase()
   const mi = String(now.getMinutes()).padStart(2, '0');
   const ss = String(now.getSeconds()).padStart(2, '0');
 
-  // Concaténation au format nombre 261011093112
+  // Concaténation au format nombre
   const result = yy + mm + dd + hh + mi + ss;
   return(Number(result, 10));
-}
-
-
-//--------------------------------------------------------------------------------------------------
-// Charge un fichier GPX, l'analyse et extrait les coordonnées lat,lon,alt
-//--------------------------------------------------------------------------------------------------
-async function LoadGPX()
-{
-  var lAvancement = 0;
-
-  // Chargement
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = '.gpx';
-
-  var content = null;
-
-  // Evènement de chargement du fichier
-  input.onchange = e =>
-  {
-    const file = e.target.files[0];
-
-    // Pas de fichier choisi
-    if (!file)
-    {
-      lAvancement = 4;
-    }
-
-    // Fichier choisi
-    else
-    {
-      const reader = new FileReader();
-      reader.onload = e =>
-      {
-        content = e.target.result;
-      };
-      pid('txtAdminNbPoints').innerHTML = "Lecture en cours ..";
-      reader.readAsText(file);
-
-      // Nom de fichier sans l'extension
-      gNomItineraire = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
-      lAvancement = 1; // Valeur de retour : OK */
-    }
-  };
-
-  // Gestion de l'annulation (si l'utilisateur ferme la fenêtre sans choisir)
-  input.oncancel = () =>
-  {
-    lAvancement = 4; // Valeur de retour : pas de fichier choisi */
-  };
-  input.click();
-
-  // Attente de la lecture du fichier
-  while (lAvancement == 0)
-  {
-    await sleep(50);
-  }
-
-  // Si un fichier a été choisi
-  if (lAvancement == 1)
-  {
-    // Parsing
-    const {length, data} = parseGpxToCoords(content);
-    if (length != 0)
-    {
-      console.log(length + " points");
-      lAvancement = 2;  // Valeur de retour : OK pour le parsing */
-    }
-    else
-    {
-      console.log("Erreur fichier");
-      lAvancement = 3;  // Valeur de retour : erreur de fichier */
-    }
-
-
-    // Effacement de l'itinéraire actuellement dans la base de données
-    lStatus = await SupabaseEffaceItineraire();
-
-    // Ecriture dans la base de données par bloc de 1000 points
-    const t0 = performance.now();
-    const batchSize = 1000;
-    var lStatus;
-
-    for (let i = 0; i < data.length; i += batchSize)
-    {
-      // Découpage
-      const chunk = data.slice(i, i + batchSize);
-
-      // Envoi du paquet
-      lStatus = await SupabaseWrite(chunk);
-      if (lStatus !== "OK")
-        break;
-
-      console.log("Load progression : " + i);
-    }
-
-    // Ecriture du Nom de l'itinéraire dans la base de données
-    lStatus = await SupabaseWriteNomItineraire(gNomItineraire);
-    const delta = Math.round(0.100*(performance.now() - t0))/100;
-    console.log("Ecriture " + lStatus + " (" + delta + "s)");
-  }
-
-  // Pas de fichier choisi
-  else
-  {
-    console.log("Pas de fichier choisi");
-  }
-  return(lAvancement);
-}
-
-
-//--------------------------------------------------------------------------------------------------
-// Analyse le contenu XML d'un fichier GPX pour en extraire les points
-//--------------------------------------------------------------------------------------------------
-function parseGpxToCoords(xmlContent)
-{
-  var lNb = 0;
-  const parser = new DOMParser();
-  const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
-  const trackPoints = xmlDoc.querySelectorAll("trkpt");
-  const coords = [];
-
-  trackPoints.forEach(pt => {
-    const lat = parseFloat(pt.getAttribute("lat"));
-    const lon = parseFloat(pt.getAttribute("lon"));
-    var alt = parseFloat(pt.getAttribute("alt"));
-
-    if (isNaN(alt))
-      alt = 0;
-
-    if (!isNaN(lat) && !isNaN(lon))
-    {
-      const lDate = DateSupabase();   // Même date pour tous les points
-      coords.push({ user:USER,
-                    date:lDate,
-                    type:0,           // Itinéraire
-                    lat:lat,
-                    lon:lon,
-                    alt:alt,
-                    prec:0,
-                    poi:0,
-                    msg:""
-                    });
-      lNb++;
-    }
-  });
-  return{length:lNb, data:coords};
 }
 
 
@@ -253,6 +106,61 @@ async function Run()
     ModeCommun();
 
   // Sinon on affiche le panel des informations de connexion
+  else
+    InfosConnexion();
+}
+
+async function RunOLD()
+{
+  let usrParam = "";
+  let keyParam = "";
+  let urlParam = "";
+  let admParam = "";
+
+  // Récupération paramètres ligne d'adresse
+  const queryString = window.location.search;
+  const lineParams = new URLSearchParams(queryString);
+
+  //----- Vérification si les paramètres existent et sont valides -----
+  // USER
+  if (lineParams.has("usr"))
+  {
+    usrParam = lineParams.get("usr");
+    let quotient = Number(usrParam) / 124991;
+    if (usrParam == "1768976714")
+      quotient = 1;
+    if ( (quotient >= 1) && (quotient <= 8) && (quotient%1 == 0) )
+      USER = usrParam;
+  }
+
+  // URL
+  if (lineParams.has("url"))
+  {
+    urlParam = lineParams.get("url");
+    if (urlParam.includes('https:'))
+      API_URL = urlParam;
+  }
+
+  // KEY
+  if (lineParams.has("key"))
+  {
+    keyParam = lineParams.get("key");
+    if (keyParam.includes('sb_publishable'))
+      API_KEY = keyParam;
+  }
+
+  // ADMIN
+  if (lineParams.has("admin"))
+  {
+    admParam = lineParams.get("admin");
+    if (admParam == "1")
+      gModeAdmin = true;
+  }
+
+  // Si tous les paramètres sont valides
+  // Mode Famille directement sinon on affiche le panel des informations de connexion
+  if ( (USER != "?") && (API_URL != "?") && (API_KEY != "?") )
+    ModeCommun();
   else
     InfosConnexion();
 }
@@ -296,6 +204,7 @@ async function ValiderAdmin()
   let quotient = Number(USER) / 124991;
 
   // Vérifications
+  let flagOk = 0;
   do
   {
     if ( (API_URL == "") || (!API_URL.includes('https:')) )
@@ -336,10 +245,14 @@ async function ValiderAdmin()
     // Active le mode admin puisqu'on vient de valider les paramètres
     pid('panAdminConnexion').style.display = 'none';
     gModeAdmin = true;
-
     flagOk = true;
-    ModeCommun();
   } while (0);
+
+  // Si tout s'est bien passé, on passe en mode commun
+  if (flagOk)
+  {
+    ModeCommun();
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -356,7 +269,7 @@ async function VerifieAccesBase()
   if (status != "OK")
     status = "<br>" + status;
   pid('txtValiderErreur').innerHTML += status;
-  await sleep(500);
+  await sleep(200);
   return(status);
 }
 
@@ -435,6 +348,7 @@ async function ModeCommun()
       {
         pid('butAdminAddPoint').style.display = 'inline-block';  // Pour le DEBUG
       }
+      CalculeDistanceTotaleEtParcourue(); // TODO ne le mettre qu'une seule fois
       AfficheRattachements();
       AfficheItineraire();
     }
@@ -467,8 +381,6 @@ async function ChargementPositions()
   var longueurPositions = 0;
   var longueurPrev = 0;
 
-  console.log("Chargement positions..");
-
   // Compte le nombre de points avant de les charger
   const lCmd = "user=eq." + USER
              + "&type=eq.100"     // Type trace
@@ -478,7 +390,6 @@ async function ChargementPositions()
   if (status == "OK")
   {
     longueurPositions = count;
-    console.log("Nombre de points : " + longueurPositions);
     if (longueurPositions > 0)
     {
       gPositions = [];
@@ -520,7 +431,7 @@ async function ChargementPositions()
 
       // Fin du chargement
       if (status !== "OK")
-        console.log(status);
+        console.log("Erreur chargement positions : " + status);
       else
         console.log("Chargement positions OK " + gPositions.length + " points");
       lRet = status;
@@ -528,7 +439,10 @@ async function ChargementPositions()
 
     // Aucun point mais ce n'est pas une erreur
     else
+    {
+      console.log("Aucune position mémorisée");
       lRet = "OK";
+    }
   }
   else
     lRet = status;
@@ -549,7 +463,6 @@ async function ChargementItineraire()
 
   pid('panChargement').style.display = 'block';
 
-  console.log("Chargement itinéraire..");
   htmlInt = "<br><b>Chargement des informations</b><br>";
   pid('panChargement').innerHTML = htmlInt;
 
@@ -562,7 +475,6 @@ async function ChargementItineraire()
   if (status == "OK")
   {
     longueurItineraire = count;
-    console.log("Nombre de points : " + longueurItineraire);
     htmlInt += "Itinéraire 1 (" + longueurItineraire + " points) : ";
     pid('panChargement').innerHTML = htmlInt + "0%";
 
@@ -612,7 +524,7 @@ async function ChargementItineraire()
 
       // Fin du chargement
       if (status !== "OK")
-        console.log(status);
+        console.log("Erreur chargement itinéraire : " + status);
       else
         console.log("Chargement itinéraire OK " + gItineraire.length + " points");
       lRet = status;
@@ -875,6 +787,9 @@ function CalculeDistanceTotaleEtParcourue()
     const distance = R * c;
     gDistanceTotaleItineraire += distance;
 
+    // Mémorisation directement dans gIinéraire[]
+    gItineraire[i].distanceParcourue = gDistanceTotaleItineraire;
+
     // Position actuelle
     if (i == dernierePosition)
     {
@@ -885,6 +800,9 @@ function CalculeDistanceTotaleEtParcourue()
   // Cas particulier du dernier point
   if (dernierePosition == (gItineraire.length - 1) )
       gDistanceParcourue = gDistanceTotaleItineraire;
+
+  // Mémorisation du dernier point de gIinéraire[]
+  gItineraire[gItineraire.length - 1].distanceParcourue = gDistanceTotaleItineraire;
 }
 
 
@@ -954,7 +872,7 @@ function AfficheRattachements()
     pos.numeroItineraire = 0;                           // Numéro de l'itinéraire (pas encore utilisé)
     pos.numeroPointItineraire = indexLePlusProche;      // Numéro du point de l'itinéraire
     pos.distance = Math.sqrt(distanceMin);
-    //    console.log("Position " + indexPosition +" -> point " + indexLePlusProche + " (Dist: " + pos.distance.toFixed(3) + " km) " + "POI : " + pos.poi + "  Start=" + lIndexStart + " Stop=" + lIndexStop);
+    // console.log("Position " + indexPosition +" -> point " + indexLePlusProche + " (Dist: " + pos.distance.toFixed(3) + " km) " + "POI : " + pos.poi + "  Start=" + lIndexStart + " Stop=" + lIndexStop);
   }
 }
 
@@ -1260,6 +1178,12 @@ function ButAdminClick()
     // Prénom
     pid('txtAdminPrenom').value = gPrenom;
 
+    // Debug
+    pid('txtAdminDebug').innerHTML = "";
+
+    // Bouton Charger
+    pid('butAdminCharger').style.backgroundColor = '#DDD';
+
     // Flag pour savoir si on doit rafraichir quand on désactive le menu Admin
     gDoitEtreRafraichi =false;
 
@@ -1292,29 +1216,7 @@ async function ButAdminChargerClick()
   pid('butAdminCharger').style.backgroundColor = '#FC8';
 
   // Chargement du fichier et écriture dans la base de données
-  const lSave = pid('txtAdminNbPoints').innerHTML;
-  pid('txtAdminNbPoints').innerHTML = "Choisir le fichier ..";
   const lRet = await LoadGPX();
-
-  console.log("lRet = " + lRet);
-
-  // Rechargement de l'itinéraire depuis la base de données si tout s'est bien passé
-  if (lRet ==2)
-  {
-    gItineraire = [];
-    lRetChargement = await ChargementItineraireAdmin();
-
-    // Lecture du nom de l'itinéraire
-    lStatus = await SupabaseReadNomItineraire();
-    gNomItineraire = lStatus.data[0].msg;
-    pid('txtAdminNomItineraire').value = gNomItineraire;
-
-    // On doit rafraichir
-    gDoitEtreRafraichi = true;
-  }
-  else
-    pid('txtAdminNbPoints').innerHTML = lSave;
-  pid('butAdminCharger').style.backgroundColor = '#DDD';
 }
 
 
@@ -1393,8 +1295,184 @@ async function ButAdminEffacerClick()
 
 
 //==================================================================================================
-// SIMULATION
+// Lecture d'un fichier GPX
 //==================================================================================================
+
+
+//--------------------------------------------------------------------------------------------------
+// Charge un fichier GPX, l'analyse et extrait les coordonnées lat,lon,alt
+//--------------------------------------------------------------------------------------------------
+async function LoadGPX()
+{
+  pid('txtAdminNbPoints').innerHTML = "Sélection du fichier ..";
+  pid('txtAdminDebug').innerHTML  = "";
+
+  //----- Sélection du fichier et lecture -----
+  const fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.gpx';
+  fileInput.addEventListener('change', async function(event)
+  {
+    const lFile = event.target.files[0];
+    if (!lFile)
+    {
+      pid('txtAdminDebug').innerHTML += "<br>Erreur sélection fichier";
+      return;
+    }
+
+    pid('txtAdminDebug').innerHTML += "<br>Fichier sélectionné, nom: " + lFile.name;
+    pid('txtAdminDebug').innerHTML += "<br>Fichier sélectionné, taille: " + lFile.size;
+    try
+    {
+
+      // Lecture du fichier Méthode 1
+      let gpxContent1 = "";
+      gpxContent1 = await lFile.text();
+      pid('txtAdminDebug').innerHTML += "<br>Méthode: file.text";
+      pid('txtAdminDebug').innerHTML += "<br>Taille lue: " + gpxContent1.length;
+      if (gpxContent1 && gpxContent1.length > 0)
+      {
+        LoadGPXSuite(lFile.name, gpxContent1);
+      }
+
+      // Lecture du fichier Méthode 2
+      else
+      {
+        let gpxContent2 = "";
+        const response = new Response(lFile);
+        gpxContent2 = await response.text();
+        pid('txtAdminDebug').innerHTML += "<br>méthode: response.text";
+        pid('txtAdminDebug').innerHTML += "<br>Taille lue: " + gpxContent2.length;
+        if (gpxContent2 && gpxContent2.length > 0)
+        {
+          LoadGPXSuite(lFile.name, gpxContent2);
+        }
+
+        // Impossible de lire le fichier
+        else
+        {
+          pid('txtAdminNbPoints').innerHTML = "Fichier vide ou non accessible";
+          pid('txtAdminDebug').innerHTML += "<br>Erreur fichier vide";
+          pid('butAdminCharger').style.backgroundColor = '#DDD';
+        }
+      }
+    }
+
+    // Erreur survenue
+    catch (error)
+    {
+      pid('txtAdminNbPoints').innerHTML = "Erreur critique !";
+      pid('txtAdminDebug').innerHTML += "<br>Erreur critique";
+    }
+  });
+
+  //----- Annulation de chargement -----
+  fileInput.addEventListener('cancel', () =>
+  {
+    pid('txtAdminNbPoints').innerHTML = "Sélection annulée";
+    pid('butAdminCharger').style.backgroundColor = '#DDD';
+  });
+
+  // Choix du fichier
+  fileInput.click();
+}
+
+//--------------------------------------------------------------------------------------------------
+// Suite lecture fichier GPX
+// - parsing
+// - écriture du fichier
+// - écriture du nom
+//--------------------------------------------------------------------------------------------------
+async function LoadGPXSuite(pFileName, gpxContent)
+{
+  const { length, data } = parseGpxToCoords(gpxContent);
+
+  //----- Effacement de l'itinéraire dans la base de données -----
+  let lStatusSupabase;
+  lStatusSupabase = await SupabaseEffaceItineraire();
+
+  //----- Ecriture dans la base de données par bloc de 1000 points -----
+  pid('txtAdminNbPoints').innerHTML = "Ecriture du fichier ..";
+  pid('txtAdminDebug').innerHTML += "<br>Ecriture BdD";
+  const batchSize = 1000;
+  for (let i = 0; i < data.length; i += batchSize)
+  {
+    if (i > 0)
+      pid('txtAdminNbPoints').innerHTML = "Ecriture " + i + "points";
+
+    // Découpage
+    const chunk = data.slice(i, i + batchSize);
+
+    // Envoi du paquet
+    lStatusSupabase = await SupabaseWrite(chunk);
+    if (lStatusSupabase !== "OK")
+      break;
+  }
+
+  //----- Finalisation -----
+  // Itinéraire complet dans la variable globale
+  gItineraire = data;
+  pid('txtAdminNbPoints').innerHTML = gItineraire.length + " points";
+
+  // Ecriture du Nom de l'itinéraire dans la base de données
+  gNomItineraire = pFileName.substring(0, pFileName.lastIndexOf('.')) || pFileName;
+  pid('txtAdminNomItineraire').value = gNomItineraire;
+  lStatusSupabase = await SupabaseWriteNomItineraire(gNomItineraire);
+  if (lStatusSupabase !== "OK")
+      pid('txtAdminNbPoints').innerHTML = "Erreur écriture nom !";
+
+  // Bouton repasse en gris
+  pid('butAdminCharger').style.backgroundColor = '#DDD';
+  gDoitEtreRafraichi = true;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Analyse le contenu XML d'un fichier GPX pour en extraire les points
+//--------------------------------------------------------------------------------------------------
+function parseGpxToCoords(xmlContent)
+{
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+  const trackPoints = xmlDoc.querySelectorAll("trkpt");
+  const coords = [];
+
+  var lNb = 0;
+  const lDate = DateSupabase();   // Même date pour tous les points
+  trackPoints.forEach(pt =>
+  {
+    const lat = parseFloat(pt.getAttribute("lat"));
+    const lon = parseFloat(pt.getAttribute("lon"));
+    var alt = parseFloat(pt.getAttribute("alt"));
+
+    // Remaplacement si altitude inexistante
+    if (isNaN(alt))
+      alt = 0;
+
+    // Si les coordonnées existent
+    if (!isNaN(lat) && !isNaN(lon))
+    {
+      coords.push({ user:USER,
+                    date:lDate,
+                    type:0,           // Itinéraire
+                    lat:lat,
+                    lon:lon,
+                    alt:alt,
+                    prec:0,           // TODO voir si on peut utiliser la précision comme index d'incrémentation pour l'ordre
+                    poi:0,
+                    msg:""
+                    });
+      lNb++;
+    }
+  });
+  pid('txtAdminDebug').innerHTML += "<br>Points XML validés: " + lNb;
+  return{ length:lNb, data:coords };
+}
+
+
+//==================================================================================================
+// Simulation
+//==================================================================================================
+
 
 //--------------------------------------------------------------------------------------------------
 // Ajout d'un point par raport au tracé
@@ -1411,6 +1489,7 @@ async function ButAdminTstAddPoint()
     if (i%increment == 0)
     {
       nb++;
+
 
       // On ne met pas plus de positions
       if (nb == 11)

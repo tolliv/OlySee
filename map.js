@@ -1,4 +1,4 @@
-// v=2611.03a
+// v=2611.06a
 //==================================================================================================
 // Gestion de la carte
 //==================================================================================================
@@ -157,43 +157,23 @@ function AfficheItineraire()
       cheminParcouru = latLngs.slice(0, indexCoupure + 1);
       cheminRestant = latLngs.slice(indexCoupure);
 
-      // Affichage de la partie parcourue
-      const traceParcourueBack = L.polyline(cheminParcouru,
-      {
-          color: '#FFF',
-          weight: 8,
-          opacity: 1,
-          pane: 'overlayPane'
-      }).addTo(map);
-      const traceParcourueFront = L.polyline(cheminParcouru,
+      // Affichage de la partie parcourue (Trait plein)
+      const traceParcourue = L.polyline(cheminParcouru,
       {
           color: '#00F',
           weight: 4,
-          opacity: 1,
-          pane: 'overlayPane'
+          opacity: 1
       }).addTo(map);
-
     }
 
-    // Affichage de la partie restante
-    if (cheminRestant.length > 1)
+    // Affichage de la partie restante (Pointillés)
+    if (cheminRestant.length > 1) {
+        const traceRestante = L.polyline(cheminRestant,
     {
-
-        const traceRestanteBack = L.polyline(cheminRestant,
-        {
-            color: '#FFF',
-            weight: 8,
-            opacity: 1,
-            pane: 'overlayPane'
-        }).addTo(map);
-
-        const traceRestanteFront = L.polyline(cheminRestant,
-        {
-            color: '#888',
+            color: '#00F',
             weight: 4,
             opacity: 1,
-            pane: 'overlayPane',
-        //    dashArray: '1, 8'
+            dashArray: '1, 8'
         }).addTo(map);
     }
 
@@ -279,7 +259,6 @@ function AffichePositions()
         // Icone rattachement sur l'itinéraire
         const latItineraire = gItineraire[pos.numeroPointItineraire].lat;
         const lonItineraire = gItineraire[pos.numeroPointItineraire].lon;
-
         const rattachement = L.marker([latItineraire, lonItineraire], {icon:iconRattachement, zIndexOffset:-1000}).addTo(map);
 
         // Icone du POI
@@ -293,7 +272,8 @@ function AffichePositions()
         else if (pos.poi == 4)
           iconChoisie = IconeFin;
         else
-        iconChoisie = IconePosition;        const marker = L.marker([pos.lat, pos.lon], {icon:iconChoisie}).addTo(map);
+        iconChoisie = IconePosition;
+        const marker = L.marker([pos.lat, pos.lon], {icon:iconChoisie}).addTo(map);
 
         // Prend en compte les markers dans les limites
         bounds.extend([pos.lat, pos.lon]);
@@ -303,12 +283,18 @@ function AffichePositions()
         if (pos.msg == null)
           lPosMsg = "";
 
+        // Avancement affiché dans la bulle
+        const lPointItineraire = pos.numeroPointItineraire;
+        const lDistanceParcourue = gItineraire[lPointItineraire].distanceParcourue;
+        const lAvancement = Math.floor(100 * lDistanceParcourue / gDistanceTotaleItineraire);
+
         let lTexteBulle = "";
         const lDate = FormaterDateRelative(pos.date.toString());
-        lTexteBulle += "<b>" + lDate.j + " à " + lDate.h + "</b><br>";
-        lTexteBulle += "(" + pos.lat + "," + pos.lon + ")<br>";
-        lTexteBulle += "Alt: " + pos.alt + "m<br>";
-        lTexteBulle += "Précision: " + pos.prec + "m<br>";
+        lTexteBulle += "<span style='font-size: 1.1em; color: #008;'><b>" + lDate.j + " à " + lDate.h + "</b></span>";
+        lTexteBulle += "</span>&nbsp;<span style='color: #FFF; background: #008;'><b>&nbsp;" + lAvancement + "<small>%</small>&nbsp;</b></span><br>"
+        lTexteBulle += "<b>Parcouru:</b> " + lDistanceParcourue.toFixed(1) + "km - <b>Restant:</b> " + (gDistanceTotaleItineraire - lDistanceParcourue).toFixed(1) + "km<br>";
+        lTexteBulle += "<b>Position:</b> " + pos.lat + "," + pos.lon + "&nbsp;+/- " + pos.prec + "m<br>";
+        lTexteBulle += "<b>Alt:</b> " + pos.alt + "m<br>";
         lTexteBulle += "<span style='font-size: 11px;'><i>" + lPosMsg + "</i></span>";
 
         // Création de la Bulle de presque la taille de l'écran
