@@ -1,4 +1,4 @@
-// v=2611.07a
+// v=2611.07b
 //==================================================================================================
 // Gestion de la carte
 //==================================================================================================
@@ -305,7 +305,8 @@ function AffichePositions()
             maxWidth: rect.width*0.8,
             maxHeight: rect.height*0.8,
             closeButton: true,
-            autoPan: false
+            autoPan: true,
+            autoPanPaddingTopLeft: L.point(10, 10)
         });
       }
     });
