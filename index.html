@@ -27,7 +27,7 @@
 
     <!----- PARTIE Informations de connexion pour Admin ----->
     <div id='panDemarrage'>
-      <div id='txtTitreGPXSuivi'><b>OlySee</b><br></div>
+      <div id='txtTitreOlySee'><b>OlySee</b><br></div>
       <img id='imgOlySee' src='imgOlySee.png?v=2611.07b'>
       <div id='txtDemarrage'><b>Lecture des informations en cours ..</b></div>
 
@@ -59,7 +59,7 @@
           <button class='classeCopierBoutons' id='butAdminCopierLienAdmin' onclick='ButAdminCopierLienAdminClick()' title="">Copier</button>
           <div class='classLink' id='txtLienAdmin'></div>
           <div style='height: 5px;'></div>
-          <button class='classeValidationBoutons' id='butAdminAfficherModeAdmin' onclick='ButAdminAfficherModeAdminClick()' title="">Afficher</button>
+          <button class='classeValidationBoutons' id='butAdminAfficherModeAdmin' onclick='ButAdminAfficherModeAdminClick()' title="">Aller sur OlySee Admin</button>
           <div style='height: 20px;'></div>
           <br>
 
@@ -67,7 +67,7 @@
           <button class='classeCopierBoutons' id='butAdminCopierLienFamille' onclick='ButAdminCopierLienFamilleClick()' title="">Copier</button>
           <div class='classLink' id='txtLienFamille'></div>
           <div style='height: 5px;'></div>
-          <button class='classeValidationBoutons' id='butAdminAfficherModeFamille' onclick='ButAdminAfficherModeFamilleClick()' title="">Afficher</button>
+          <button class='classeValidationBoutons' id='butAdminAfficherModeFamille' onclick='ButAdminAfficherModeFamilleClick()' title="">Aller sur OlySee Famille</button>
           <div style='height: 20px;'></div>
 
           <!-- Compensation Bottom container -->
@@ -148,8 +148,7 @@
 
       <!----- PARTIE Titre ----->
       <div id='panTitreSuivi' style='font-size: 1.8em;'>
-        Suivi de
-        <span id='txtTitre'></span>
+        <span id='txtTitre'>Suivi de</span>
         <span id='txtPrenom' style='opacity: 0;'>&nbsp;</span>
         <span id='txtPourcentage'></span>
       </div>
@@ -169,7 +168,7 @@
             <div id='progression-fill'></div>
           </div>
           <div id="progression-labels">
-            <span id='spanDistanceMin' onclick="PasseAdminOn();">0km</span><span id='spanDistanceMax' onclick='PasseAdminOff();'>0km</span>
+            <span id='spanDistanceMin' onclick='PasseAdminOn(1);'>0km</span><span id='spanDistanceMax' onclick='PasseAdminOn(2);'>0km</span>
           </div>
           <div id="divDistances">
             <span id='txtDistanceParcourue'></span>

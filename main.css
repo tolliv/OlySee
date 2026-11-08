@@ -55,7 +55,6 @@ body
 #txtTitre
 {
   background-color: #FFF;
-  font-weight: bold;
 }
 
 /*----- Boutons et menus -------------------------------------------------------------------------*/
@@ -213,7 +212,7 @@ body
 }
 
 
-/*----- Démarrage en mode Admin ------------------------------------------------------------------------------------*/
+/*----- Démarrage  -------------------------------------------------------------------------------*/
 /* Panel de démarrage */
 #panDemarrage
 {
@@ -225,7 +224,7 @@ body
 }
 
 /* Eléments pendant le démarrage */
-#txtTitreGPXSuivi
+#txtTitreOlySee
 {
   font-size: 1.8em;
   text-align: center;
@@ -290,6 +289,7 @@ body
   height: 30px;
   border-radius: 5px;
   border: 1px solid #CCC;
+  background: #EEE;
   user-select: none;
   cursor: pointer;
 }
@@ -306,6 +306,7 @@ body
   height: 20px;
   border-radius: 5px;
   border: 1px solid #CCC;
+  background: #EEE;
   user-select: none;
   cursor: pointer;
 }

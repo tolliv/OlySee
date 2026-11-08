@@ -18,6 +18,7 @@ var gAffichagePositions = 'last';
 var gPrenom = PRENOM_DEFAUT;
 var gNomItineraire = NOM_ITINEAIRE_DEFAUT;
 var gDoitEtreRafraichi = false;
+var gPassageCntAdmin = 0;
 
 //----- Démarrage de l'application -----
 document.addEventListener('DOMContentLoaded', function()
@@ -257,11 +258,25 @@ async function GenerationLienFamille()
 //----- ID Copier -----
 function ButAdminCopierIDClick()
 {
+  const but = pid('butAdminCopierID');
+  but.style.backgroundColor = '#FC8';
+  copierDansPressePapier(pid('txtValeurID').innerHTML);
+  setTimeout(() =>
+  {
+    but.style.backgroundColor = '#EEE';
+  }, 200);
 }
 
 //----- Lien Admin Copier -----
-function butAdminCopierLienAdminClick()
+function ButAdminCopierLienAdminClick()
 {
+  const but = pid('butAdminCopierLienAdmin');
+  but.style.backgroundColor = '#FC8';
+  copierDansPressePapier(pid('txtLienAdmin').innerHTML);
+  setTimeout(() =>
+  {
+    but.style.backgroundColor = '#EEE';
+  }, 200);
 }
 
 //----- Lien Admin Afficher -----
@@ -273,12 +288,34 @@ function ButAdminAfficherModeAdminClick()
 //----- Lien Famille Copier -----
 function ButAdminCopierLienFamilleClick()
 {
+  const but = pid('butAdminCopierLienFamille');
+  but.style.backgroundColor = '#FC8';
+  copierDansPressePapier(pid('txtLienFamille').innerHTML);
+  setTimeout(() =>
+  {
+    but.style.backgroundColor = '#EEE';
+  }, 200);
 }
 
 //----- Lien Famille Afficher -----
 function ButAdminAfficherModeFamilleClick()
 {
   window.location.href = pid('txtLienFamille').innerHTML;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Copie dans le presse papier
+//--------------------------------------------------------------------------------------------------
+async function copierDansPressePapier(texte)
+{
+  try
+  {
+    await navigator.clipboard.writeText(texte);
+  }
+  catch (err)
+  {
+    console.error("Erreur lors de la copie : ", err);
+  }
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -301,14 +338,15 @@ async function VerifieAccesBase()
 //--------------------------------------------------------------------------------------------------
 // Prépare l'IHM pour passer en Admin (visibilité des boutons)
 //--------------------------------------------------------------------------------------------------
-function PasseAdminOn()
+function PasseAdminOn(val)
 {
-  pid('butAdmin').style.display = 'inline-block';
+  gPassageCntAdmin |= val;
+  if (gPassageCntAdmin == 3)
+  {
+    pid('butAdmin').style.display = 'inline-block';
+  }
 }
-function PasseAdminOff()
-{
-  pid('butAdmin').style.display = 'none';
-}
+
 
 //--------------------------------------------------------------------------------------------------
 // Ajoute un 's' ou non à un texte
