@@ -1,8 +1,8 @@
-// v=2611.07b
-// &admin=1qS9wLmYSVRaRTE1riIZJgaROJC9PeS4eYRLHHPF6lzSu4b6j7nREuNVKLprU0M6xTUW72D5HUssvvDY0rx7SqBOGu7DcycfgWatR4PDRV5DYhXVtLUkvRwOHqgaW71TgpFPeU4mAa7xuU8KKx7mjXqNn0Q14jLmBWGZVjMOXPikw
+// v=2611.08a
 //==================================================================================================
-// Fichier main
+// OlySee : fichier principal
 //==================================================================================================
+const gVersion = "v=2611.08a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -85,21 +85,22 @@ function DateSupabase()
 //--------------------------------------------------------------------------------------------------
 async function Run()
 {
-  let idParam = "";
+  // Texte de démarrage
+  pid('txtDemarrage').innerHTML = "<span style='font-size: 1em;'>" + gVersion.substring(2, 10) + "</span><br>";
 
   // Récupération ID sur ligne d'adresse
   const queryString = window.location.search;
   const lineParams = new URLSearchParams(queryString);
 
+  // Vérification si le paramètre id existe
   let lMode = "";
-  // Vérification si les paramètre id existe
   if (lineParams.has("id"))
   {
     ID = lineParams.get("id");
     lMode = "famille";
   }
 
-  // Vérification si les paramètre admin existe
+  // Vérification si le paramètre admin existe
   else if (lineParams.has("admin"))
   {
     ID = lineParams.get("admin");
@@ -107,6 +108,8 @@ async function Run()
   }
 
   // Traitement commun
+  // Peu importe le nom du paramètre, le mode admin est codé à l'intérieur
+  // id ou admin est juste pour savoir rapidement le type de paramètre
   API_URL = "";
   API_KEY = "";
   USER = "";
@@ -196,17 +199,12 @@ async function ValiderAdmin()
     localStorage.setItem('GPXSuivi_usr', USER);
     localStorage.setItem('GPXSuivi_url', API_URL);
     localStorage.setItem('GPXSuivi_key', API_KEY);
-
+    GenerationLiens();
     flagOk = true;
   } while (0);
 
-  // Si tout s'est bien passé, on passe en mode commun
-  if (flagOk)
-  {
-      gModeAdmin = true;  // Mode Admin
-      GenerationLiens();
-  }
-  else
+  // Si erreur
+  if (!flagOk)
   {
     console.log("Erreur dans les données");
   }
@@ -338,15 +336,14 @@ async function VerifieAccesBase()
 //--------------------------------------------------------------------------------------------------
 // Prépare l'IHM pour passer en Admin (visibilité des boutons)
 //--------------------------------------------------------------------------------------------------
-function PasseAdminOn(val)
+function SequenceAdminOn()
 {
-  gPassageCntAdmin |= val;
-  if (gPassageCntAdmin == 3)
+  gPassageCntAdmin++;
+  if (gPassageCntAdmin >= 5)
   {
     pid('butAdmin').style.display = 'inline-block';
   }
 }
-
 
 //--------------------------------------------------------------------------------------------------
 // Ajoute un 's' ou non à un texte
@@ -360,7 +357,6 @@ function S(nombre, texte)
   return(textefinal);
 }
 
-
 //--------------------------------------------------------------------------------------------------
 // Démarrage du mode commun
 // Avec le bouton Admin si on vient de valider les informations de connexion
@@ -368,7 +364,7 @@ function S(nombre, texte)
 async function ModeCommun()
 {
   // Affichage du panneau de chargement
-  pid('panChargement').style.display = 'block';
+//  pid('panChargement').style.display = 'block';
 
   // Prénom et marqueurs
   await LecturePrenom();
@@ -423,7 +419,7 @@ async function ModeCommun()
     }
 
     if (gModeAdmin)
-      PasseAdminOn();
+      pid('butAdmin').style.display = 'inline-block';
   }
   else
   {
@@ -525,7 +521,7 @@ async function ChargementItineraire()
 
   pid('panChargement').style.display = 'block';
 
-  htmlInt = "<br><b>Chargement des informations</b><br>";
+  htmlInt = "<br><b>Chargement de l'itinéraire</b><br>";
   pid('panChargement').innerHTML = htmlInt;
 
   // Compte le nombre de points avant de les charger
@@ -537,7 +533,7 @@ async function ChargementItineraire()
   if (status == "OK")
   {
     longueurItineraire = count;
-    htmlInt += "Itinéraire 1 (" + longueurItineraire + " points) : ";
+    htmlInt += "Itinéraire (" + longueurItineraire + " points) : ";
     pid('panChargement').innerHTML = htmlInt + "0%";
 
     if (longueurItineraire > 0)
@@ -607,7 +603,7 @@ async function ChargementItineraire()
 // Chargement de l'itinéraire depuis la base de données - en mode Admin
 // Retourne un status
 //--------------------------------------------------------------------------------------------------
-async function ChargementItineraireAdmin()
+async function ChargementItineraireAdmin_TODELETE() // TODO
 {
   var lRet = "";
   var htmlInt = "";
@@ -693,9 +689,9 @@ function BoutonEtat(bouton, etat)
   const but = pid(bouton);
   if (etat == 'actif')
   {
-    but.style.backgroundColor = '#FFF';
+    but.style.backgroundColor = '#FC8';
     but.style.color = '#000';
-    but.style.border = '2px solid #4F4';
+    but.style.border = '2px solid #DA6';
     but.state = 'actif';
   }
 

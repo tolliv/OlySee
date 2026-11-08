@@ -1,4 +1,4 @@
-// v=2611.07b
+// v=2611.08a
 //==================================================================================================
 // Gestion de la carte
 //==================================================================================================
@@ -327,7 +327,7 @@ function AffichePositions()
 const fondsDeCarte =
 {
     'osm': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors'}),
+        attribution: '©OpenStreetMap contributors'}),
 
     'topo': L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenTopMap contributors'}),
