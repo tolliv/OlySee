@@ -1,8 +1,8 @@
-// v=2611.08a
+// v=2611.08b
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.08a";
+const gVersion = "v=2611.08b";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -890,7 +890,7 @@ function AfficheRattachements()
 {
   let indexPosition = 0;
   let distanceMin = Infinity;
-  let indexLePlusProche = -1;
+  let indexLePlusProche = 0;
   let lIndexStart, lIndexStop;
 
   // Pour chaque position mémorisée
