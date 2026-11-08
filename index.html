@@ -28,7 +28,7 @@
     <!----- PARTIE Informations de connexion pour Admin ----->
     <div id='panDemarrage'>
       <div id='txtTitreGPXSuivi'><b>OlySee</b><br></div>
-      <img id='imgGPXSuivi' src='imgGPXSuivi.png?v=2611.07b'>
+      <img id='imgOlySee' src='imgOlySee.png?v=2611.07b'>
       <div id='txtDemarrage'><b>Lecture des informations en cours ..</b></div>
 
       <!----- PARTIE Informations de connexion pour Admin ----->
@@ -36,17 +36,44 @@
         <div id='txtAdmin'></div>
         <div style='height: 20px;'></div>
         <div class='classSaisieTitre' >Adresse URL</div>
-        <input class='classSaisieTexte' id='txtUrl' type='text' placeholder="htpps://..."><br>
+        <input class='classSaisieTexte' id='txtUrl' oninput='ChampModifie()' type='text' placeholder="htpps://..."><br>
         <div style='height: 15px;'></div>
         <div class='classSaisieTitre' >Clé</div>
-        <input class='classSaisieTexte' id='txtKey' type='text' placeholder="sb_publishable..."><br>
+        <input class='classSaisieTexte' id='txtKey' oninput='ChampModifie()' type='text' placeholder="sb_publishable..."><br>
         <div style='height: 15px;'></div>
         <div class='classSaisieTitre' >Numéro utilisateur</div>
-        <input class='classSaisieTexte' id='txtUsr' type='text' placeholder="(6 chiffres)"><br>
+        <input class='classSaisieTexte' id='txtUsr' oninput='ChampModifie()' type='text' placeholder="(6 chiffres)"><br>
         <div style='height: 20px;'></div>
-        <button id='butAdminValider' onclick='ValiderAdmin()' title="Valider les informations de connexion">Valider</button>
+        <button class='classeValidationBoutons' id='butAdminValider' onclick='ValiderAdmin()' title="Valider les informations de connexion">Valider</button>
         <div style='height: 20px;'></div>
         <div id='txtValiderErreur'></div>
+        <div style='height: 30px;'></div>
+        <div id='panLiens'>
+          <span class='classSaisieTitre' >ID du randonneur pour OlyGo</span>
+          <button class='classeCopierBoutons' id='butAdminCopierID' onclick='ButAdminCopierIDClick()' title="">Copier</button>
+          <div class='classLink' id='txtValeurID'></div>
+          <div style='height: 20px;'></div>
+          <br>
+
+          <span class='classSaisieTitre' >OlySee en mode Admin</span>
+          <button class='classeCopierBoutons' id='butAdminCopierLienAdmin' onclick='ButAdminCopierLienAdminClick()' title="">Copier</button>
+          <div class='classLink' id='txtLienAdmin'></div>
+          <div style='height: 5px;'></div>
+          <button class='classeValidationBoutons' id='butAdminAfficherModeAdmin' onclick='ButAdminAfficherModeAdminClick()' title="">Afficher</button>
+          <div style='height: 20px;'></div>
+          <br>
+
+          <span class='classSaisieTitre'>OlySee pour la famille</span>
+          <button class='classeCopierBoutons' id='butAdminCopierLienFamille' onclick='ButAdminCopierLienFamilleClick()' title="">Copier</button>
+          <div class='classLink' id='txtLienFamille'></div>
+          <div style='height: 5px;'></div>
+          <button class='classeValidationBoutons' id='butAdminAfficherModeFamille' onclick='ButAdminAfficherModeFamilleClick()' title="">Afficher</button>
+          <div style='height: 20px;'></div>
+
+          <!-- Compensation Bottom container -->
+          <div style='height: 28px;'></div>
+        </div>
+
       </div>
 
     </div>

@@ -43,30 +43,6 @@ body
   flex-direction: column;
 }
 
-/* Panel de démmarage */
-#panDemarrage
-{
-  margin-left: 10px;
- text-align: center;
-}
-
-/* Eléments pendant le démarrage */
-#txtTitreGPXSuivi
-{
-  font-size: 1.8em;
-  text-align: center;
-}
-
-#imgGPXSuivi
-{
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
-  max-width: 296px;
-  width: 60%;
-  height: auto;
-}
-
 /* Conteneur principal une fois la connexion faite */
 #panAffichagePrincipal
 {
@@ -237,8 +213,41 @@ body
 }
 
 
+/*----- Démarrage en mode Admin ------------------------------------------------------------------------------------*/
+/* Panel de démarrage */
+#panDemarrage
+{
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0px;
+}
 
-/*----- Admin ------------------------------------------------------------------------------------*/
+/* Eléments pendant le démarrage */
+#txtTitreGPXSuivi
+{
+  font-size: 1.8em;
+  text-align: center;
+}
+
+/* Image de démarrage */
+#imgOlySee
+{
+  display: block;
+  max-width: 296px;
+  width: 60%;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 10px;
+}
+
+/* Texte sous l'image */
+#txtDemarrage
+{
+  text-align: center;
+}
 
 /* Container pour l'identification de l'admin */
 #panAdminConnexion
@@ -251,13 +260,15 @@ body
 #txtAdmin
 {
   margin-left: 10px;
+  margin-right: 10px;
 }
 
 /* Position du titre de la zone de saisie */
 .classSaisieTitre
 {
   width: 100%;
-  margin-left: 10px;
+  margin-left: 0px;
+  margin-right: 0px;
   margin-bottom: 2px;
   font-weight: bold;
 }
@@ -265,21 +276,66 @@ body
 /* Position du texte de la zone de saisie */
 .classSaisieTexte
 {
-  width: 90%;
-  max-width: 500px;
-  margin-left: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Bouton valider les informations de connexion */
-#butAdminValider
+/* Bouton de validation */
+.classeValidationBoutons
 {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 200px;
+  height: 30px;
+  border-radius: 5px;
+  border: 1px solid #CCC;
+  user-select: none;
+  cursor: pointer;
+}
+
+/* Bouton de copie */
+.classeCopierBoutons
+{
+  display: inline-block;
+  margin-bottom: 0px;
+  margin-top: 0px;
   margin-left: 10px;
+  padding: 0px;
+  width: 60px;
+  height: 20px;
+  border-radius: 5px;
+  border: 1px solid #CCC;
+  user-select: none;
+  cursor: pointer;
 }
 
 #txtValiderErreur
 {
-  margin-left: 10px;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
 }
+
+/* Panel des liens générés */
+#panLiens
+{
+  display: none;
+}
+
+/* Classe pour afficher les liens */
+.classLink
+{
+  display: block;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-all;
+  white-space: normal;
+  font-size: 0.8em;
+  color: #00F;
+}
+
 
 /*----- Chargement -------------------------------------------------------------------------------*/
 

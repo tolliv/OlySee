@@ -1,5 +1,5 @@
 // v=2611.07b
-// &id=Fci7CsIwFADQf7lzaUgVodmKgyAqDh3UJeRKSPqiiTcxCeK_i2c8H4ggwIbgSDC2mNWg9Q69z97mMqRUaopOoSJdP1f20hTYm7OgcNZQwQQCCKWLOA9k_yl3cS_767G_nA5Lt0lcN49yS_JuJpXH7gwVDCCAN9u25fD9AQby
+// &admin=1qS9wLmYSVRaRTE1riIZJgaROJC9PeS4eYRLHHPF6lzSu4b6j7nREuNVKLprU0M6xTUW72D5HUssvvDY0rx7SqBOGu7DcycfgWatR4PDRV5DYhXVtLUkvRwOHqgaW71TgpFPeU4mAa7xuU8KKx7mjXqNn0Q14jLmBWGZVjMOXPikw
 //==================================================================================================
 // Fichier main
 //==================================================================================================
@@ -90,19 +90,36 @@ async function Run()
   const queryString = window.location.search;
   const lineParams = new URLSearchParams(queryString);
 
-  // Vérification si les paramètres existent et sont valides
+  let lMode = "";
+  // Vérification si les paramètre id existe
   if (lineParams.has("id"))
   {
     ID = lineParams.get("id");
-    const IDdecod = await(decodeSupabaseConfig(ID));
-    API_URL = IDdecod.url;
-    API_KEY = IDdecod.key;
-    USER    = IDdecod.usr;
+    lMode = "famille";
   }
 
-  // Si tous les paramètres sont valides on affiche le mode Famille
-  const quotient = Number(USER) / 124991;
-  if ( (quotient >= 1) && (quotient <= 8) && (quotient%1 == 0) )
+  // Vérification si les paramètre admin existe
+  else if (lineParams.has("admin"))
+  {
+    ID = lineParams.get("admin");
+    lMode = "admin";
+  }
+
+  // Traitement commun
+  API_URL = "";
+  API_KEY = "";
+  USER = "";
+  if (lMode != "")
+  {
+    const IDdecod = await(decodeSupabaseConfig(ID));
+    API_URL    = IDdecod.url;
+    API_KEY    = IDdecod.key;
+    USER       = IDdecod.usr;
+    gModeAdmin = IDdecod.admin;
+  }
+
+  // Si tous les paramètres sont valides on affiche le mode commun (Famille ou Admin)
+  if ( (API_URL != "") && (API_KEY != "") && (USER != "") )
     ModeCommun();
 
   // Sinon on affiche le panel des informations de connexion
@@ -110,64 +127,10 @@ async function Run()
     InfosConnexion();
 }
 
-async function RunOLD()
-{
-  let usrParam = "";
-  let keyParam = "";
-  let urlParam = "";
-  let admParam = "";
-
-  // Récupération paramètres ligne d'adresse
-  const queryString = window.location.search;
-  const lineParams = new URLSearchParams(queryString);
-
-  //----- Vérification si les paramètres existent et sont valides -----
-  // USER
-  if (lineParams.has("usr"))
-  {
-    usrParam = lineParams.get("usr");
-    let quotient = Number(usrParam) / 124991;
-    if (usrParam == "1768976714")
-      quotient = 1;
-    if ( (quotient >= 1) && (quotient <= 8) && (quotient%1 == 0) )
-      USER = usrParam;
-  }
-
-  // URL
-  if (lineParams.has("url"))
-  {
-    urlParam = lineParams.get("url");
-    if (urlParam.includes('https:'))
-      API_URL = urlParam;
-  }
-
-  // KEY
-  if (lineParams.has("key"))
-  {
-    keyParam = lineParams.get("key");
-    if (keyParam.includes('sb_publishable'))
-      API_KEY = keyParam;
-  }
-
-  // ADMIN
-  if (lineParams.has("admin"))
-  {
-    admParam = lineParams.get("admin");
-    if (admParam == "1")
-      gModeAdmin = true;
-  }
-
-  // Si tous les paramètres sont valides
-  // Mode Famille directement sinon on affiche le panel des informations de connexion
-  if ( (USER != "?") && (API_URL != "?") && (API_KEY != "?") )
-    ModeCommun();
-  else
-    InfosConnexion();
-}
-
-
 //--------------------------------------------------------------------------------------------------
 // Affichage des informations de connexion
+// Car on n'a pas pu entrer en mode Admin ou Famille
+// Les données sont issues du LocalStorage
 //--------------------------------------------------------------------------------------------------
 async function InfosConnexion()
 {
@@ -183,7 +146,6 @@ async function InfosConnexion()
   if (localStorage.getItem('GPXSuivi_key') != null)
     txtKeyLocal = localStorage.getItem('GPXSuivi_key');
 
-  // Les valeurs sont données par la ligne d'adresse si existantes
   pid('txtUsr').value = txtUsrLocal;
   pid('txtUrl').value = txtUrlLocal;
   pid('txtKey').value = txtKeyLocal;
@@ -200,11 +162,8 @@ async function ValiderAdmin()
   API_URL = pid('txtUrl').value;
   API_KEY = pid('txtKey').value;
 
-  // Validation
-  let quotient = Number(USER) / 124991;
-
   // Vérifications
-  let flagOk = 0;
+  let flagOk = false;
   do
   {
     if ( (API_URL == "") || (!API_URL.includes('https:')) )
@@ -222,11 +181,6 @@ async function ValiderAdmin()
       pid('txtValiderErreur').innerHTML = "Erreur sur le numéro d'utilisateur";
       break;
     }
-    if ( (quotient < 1) || (quotient > 8) || (quotient%1 !=0) )
-    {
-      pid('txtValiderErreur').innerHTML = "Erreur, Numéro d'utilisateur non autorisé";
-      break;
-    }
 
     // Encodage et Décodage, puis vérification de la base de données
     ID = await encodeSupabaseConfig(API_URL, API_KEY, USER);
@@ -242,17 +196,89 @@ async function ValiderAdmin()
     localStorage.setItem('GPXSuivi_url', API_URL);
     localStorage.setItem('GPXSuivi_key', API_KEY);
 
-    // Active le mode admin puisqu'on vient de valider les paramètres
-    pid('panAdminConnexion').style.display = 'none';
-    gModeAdmin = true;
     flagOk = true;
   } while (0);
 
   // Si tout s'est bien passé, on passe en mode commun
   if (flagOk)
   {
-    ModeCommun();
+      gModeAdmin = true;  // Mode Admin
+      GenerationLiens();
   }
+  else
+  {
+    console.log("Erreur dans les données");
+  }
+}
+
+//--------------------------------------------------------------------------------------------------
+// Fonction appelée si un champ est modifié
+//--------------------------------------------------------------------------------------------------
+function ChampModifie()
+{
+  pid('panLiens').style.display = 'none';
+  pid('txtValiderErreur').innerHTML = "";
+}
+
+//--------------------------------------------------------------------------------------------------
+// Génération des liens
+//--------------------------------------------------------------------------------------------------
+async function GenerationLiens()
+{
+  pid('txtValeurID').innerHTML = await GenerationLienID();
+  pid('txtLienAdmin').innerHTML   = await GenerationLienAdmmin();
+  pid('txtLienFamille').innerHTML = await GenerationLienFamille();
+  pid('panLiens').style.display = 'block';
+}
+
+async function GenerationLienID()
+{
+  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
+  return (lBase62);
+}
+
+async function GenerationLienAdmmin()
+{
+  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 1);
+  const lLien = "https://tolliv.github.io/OlySee/index.html?admin=" + lBase62;
+  return (lLien);
+}
+
+async function GenerationLienFamille()
+{
+  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
+  const lLien = "https://tolliv.github.io/OlySee/index.html?id=" + lBase62;
+  return (lLien);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Gestion des butons de copie de lien et d'affichage
+//--------------------------------------------------------------------------------------------------
+//----- ID Copier -----
+function ButAdminCopierIDClick()
+{
+}
+
+//----- Lien Admin Copier -----
+function butAdminCopierLienAdminClick()
+{
+}
+
+//----- Lien Admin Afficher -----
+function ButAdminAfficherModeAdminClick()
+{
+  window.location.href = pid('txtLienAdmin').innerHTML;
+}
+
+//----- Lien Famille Copier -----
+function ButAdminCopierLienFamilleClick()
+{
+}
+
+//----- Lien Famille Afficher -----
+function ButAdminAfficherModeFamilleClick()
+{
+  window.location.href = pid('txtLienFamille').innerHTML;
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -261,7 +287,6 @@ async function ValiderAdmin()
 async function VerifieAccesBase()
 {
   pid('txtValiderErreur').innerHTML = "";
-  await sleep(100);
   pid('txtValiderErreur').innerHTML = "<b>Vérification de la base de données : </b>";
   let status = await SupabaseTestConnexion();
 
@@ -269,7 +294,6 @@ async function VerifieAccesBase()
   if (status != "OK")
     status = "<br>" + status;
   pid('txtValiderErreur').innerHTML += status;
-  await sleep(200);
   return(status);
 }
 

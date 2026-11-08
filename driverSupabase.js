@@ -194,6 +194,11 @@ async function SupabaseEffaceItineraire()
 }
 
 
+//==================================================================================================
+// Chiffrement et déchiffrement
+//==================================================================================================
+
+
 //--------------------------------------------------------------------------------------------------
 // Calcule un CRC16 (CCITT) sur un Uint8Array
 //--------------------------------------------------------------------------------------------------
@@ -211,92 +216,125 @@ function calculateCRC16(buffer)
   return(crc & 0xFFFF);
 }
 
+
 //--------------------------------------------------------------------------------------------------
-// Encode et compresse
+// Conversion binaire <-> base62
 //--------------------------------------------------------------------------------------------------
-async function encodeSupabaseConfig(url, key, usr)
-{
-  try
-  {
-    const payload = JSON.stringify({ u: url, k: key, i: usr });
+// Alphabet Base62
+const B62_CHARS = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
 
-    // Compression
-    const stream = new Blob([payload]).stream().pipeThrough(new CompressionStream('deflate-raw'));
-    const compressedBuffer = await new Response(stream).arrayBuffer();
-    let bytes = new Uint8Array(compressedBuffer);
-    for (let i = 0; i < bytes.length; bytes[i++] ^= 0x69);
-
-    // Ajout du CRC à la fin du tableau
-    const crc = calculateCRC16(bytes);
-    const finalBytes = new Uint8Array(bytes.length + 2);
-    finalBytes.set(bytes);
-    finalBytes[bytes.length] = (crc >> 8) & 0xFF;     // Octet de poids fort
-    finalBytes[bytes.length + 1] = crc & 0xFF;        // Octet de poids faible
-
-    // Conversion en Base64 URL-safe
-    let binary = '';
-    const chunkSize = 0x8000;
-    for (let i = 0; i < finalBytes.length; i += chunkSize)
-    {
-      binary += String.fromCharCode.apply(null, finalBytes.subarray(i, i + chunkSize));
+// Encode un Uint8Array en chaîne Base62
+function toBase62(bytes) {
+    let n = BigInt('0x' + Array.from(bytes).map(b => b.toString(16).padStart(2, '0')).join(''));
+    if (n === 0n) return B62_CHARS[0];
+    let res = '';
+    while (n > 0n) {
+        res = B62_CHARS[Number(n % 62n)] + res;
+        n /= 62n;
     }
+    return res;
+}
 
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  }
-  catch (error)
-  {
-    console.log("Erreur encodeSupabaseConfig : " + error);
-    return ("");
-  }
+// Décode une chaîne Base62 en Uint8Array
+function fromBase62(str) {
+    let n = 0n;
+    for (const char of str) {
+        const idx = B62_CHARS.indexOf(char);
+        if (idx === -1) throw new Error("Caractère Base62 invalide");
+        n = n * 62n + BigInt(idx);
+    }
+    let hex = n.toString(16);
+    if (hex.length % 2) hex = '0' + hex;
+    const bytes = new Uint8Array(hex.match(/.{1,2}/g).map(byte => parseInt(byte, 16)));
+    return bytes;
 }
 
 //--------------------------------------------------------------------------------------------------
-// Décode et décompresse
+// Encode et compresse la configuration
 //--------------------------------------------------------------------------------------------------
-async function decodeSupabaseConfig(encodedStr)
+async function encodeSupabaseConfig(url, key, usr, admin)
 {
-  try
-  {
-    // Restauration du Base64 standard
-    let base64 = encodedStr.replace(/-/g, '+').replace(/_/g, '/');
-    while (base64.length % 4) base64 += '=';
-    const binary = atob(base64);
-    if (binary.length <= 2) throw new Error("Données trop courtes");
-    const allBytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++)
-    {
-      allBytes[i] = binary.charCodeAt(i);
+    try {
+        const payload = JSON.stringify({ u: url, k: key, i: usr, a: admin ? 1 : 0 });
+
+        const stream = new Blob([payload]).stream().pipeThrough(new CompressionStream('deflate-raw'));
+        const compressedBuffer = await new Response(stream).arrayBuffer();
+        let bytes = new Uint8Array(compressedBuffer);
+
+        // --- EFFET AVALANCHE (Double passe non-linéaire) ---
+
+        // Passe 1 : Avant
+        let salt = 0x42;
+        for (let i = 0; i < bytes.length; i++) {
+            bytes[i] ^= salt;
+            salt = (salt + bytes[i]) & 0xFF; // Mélange non-linéaire
+        }
+
+        // Passe 2 : Arrière (pour qu'un changement à la fin impacte le début)
+        let salt2 = 0x99;
+        for (let i = bytes.length - 1; i >= 0; i--) {
+            bytes[i] ^= salt2;
+            salt2 = (salt2 + bytes[i]) & 0xFF;
+        }
+
+        // Ajout du CRC16
+        const crc = calculateCRC16(bytes);
+        const finalBytes = new Uint8Array(bytes.length + 2);
+        finalBytes.set(bytes);
+        finalBytes[bytes.length] = (crc >> 8) & 0xFF;
+        finalBytes[bytes.length + 1] = crc & 0xFF;
+
+        return toBase62(finalBytes);
+    } catch (error) {
+        console.error("Erreur encode : " + error);
+        return "";
     }
-
-    // Séparation des données et du CRC (les 2 derniers octets)
-    const dataBytes = allBytes.slice(0, allBytes.length - 2);
-    const receivedCrc = (allBytes[allBytes.length - 2] << 8) | allBytes[allBytes.length - 1];
-
-    // Vérification de l'intégrité
-    const computedCrc = calculateCRC16(dataBytes);
-    if (computedCrc !== receivedCrc) {
-      throw new Error("Échec de l'intégrité (CRC16 incorrect)");
-    }
-
-    // Décompression native
-    for (let i = 0; i < dataBytes.length; dataBytes[i++] ^= 0x69);
-    const stream = new Blob([dataBytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
-    const decompressedBuffer = await new Response(stream).arrayBuffer();
-    const jsonString = new TextDecoder().decode(decompressedBuffer);
-    const obj = JSON.parse(jsonString);
-
-    return {
-      url: obj.u,
-      key: obj.k,
-      usr: obj.i
-    };
-  }
-  catch (error)
-  {
-    console.log("Erreur decodeSupabaseConfig : " + error);
-    return { url: "", key: "", usr: "" };
-  }
 }
+
+//--------------------------------------------------------------------------------------------------
+// Décode et décompresse la configuration
+//--------------------------------------------------------------------------------------------------
+async function decodeSupabaseConfig(encodedStr) {
+    const emptyRes = { url: "", key: "", usr: "", admin: false };
+    try {
+        if (!encodedStr) return emptyRes;
+
+        const allBytes = fromBase62(encodedStr);
+        if (allBytes.length <= 2) return emptyRes;
+
+        const dataBytes = allBytes.slice(0, allBytes.length - 2);
+        const receivedCrc = (allBytes[allBytes.length - 2] << 8) | allBytes[allBytes.length - 1];
+
+        if (calculateCRC16(dataBytes) !== receivedCrc) return emptyRes;
+
+        // --- INVERSION DE L'EFFET AVALANCHE ---
+
+        // Inverser Passe 2 (Arrière)
+        let salt2 = 0x99;
+        for (let i = dataBytes.length - 1; i >= 0; i--) {
+            let current = dataBytes[i];
+            dataBytes[i] ^= salt2;
+            salt2 = (salt2 + current) & 0xFF;
+        }
+
+        // Inverser Passe 1 (Avant)
+        let salt = 0x42;
+        for (let i = 0; i < dataBytes.length; i++) {
+            let current = dataBytes[i];
+            dataBytes[i] ^= salt;
+            salt = (salt + current) & 0xFF;
+        }
+
+        const stream = new Blob([dataBytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'));
+        const decompressedBuffer = await new Response(stream).arrayBuffer();
+        const obj = JSON.parse(new TextDecoder().decode(decompressedBuffer));
+
+        return { url: obj.u, key: obj.k, usr: obj.i, admin: obj.a === 1 };
+    } catch (error) {
+        return emptyRes;
+    }
+}
+
 
 //====================== COMMANDES DE BASE =========================================================
 
