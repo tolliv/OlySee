@@ -1,4 +1,4 @@
-/* v=2611.08b */
+/* v=2611.09a */
 /*==================================================================================================
   Il y a deux parties :
   #panTopContainer pour la partie haute de l'écran
@@ -8,10 +8,11 @@
 ==================================================================================================*/
 
 /* Taille générale du texte */
-body
+HTML, body
 {
   font-family: verdana;
   font-size: 13px;
+  scroll-behavior: smooth;
 }
 
 /* Taille de texte plus petite */
@@ -311,6 +312,16 @@ body
   background: #EEE;
   user-select: none;
   cursor: pointer;
+}
+
+#butAdminAfficherModeFamille
+{
+  background: #CFC;
+}
+
+#butAdminAfficherModeAdmin
+{
+  background: #FCC;
 }
 
 #txtValiderErreur

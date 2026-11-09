@@ -1,8 +1,8 @@
-// v=2611.08b
+// v=2611.09a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.08b";
+const gVersion = "v=2611.09a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -225,15 +225,25 @@ function ChampModifie()
 async function GenerationLiens()
 {
   pid('txtValeurID').innerHTML = await GenerationLienID();
-  pid('txtLienAdmin').innerHTML   = await GenerationLienAdmmin();
   pid('txtLienFamille').innerHTML = await GenerationLienFamille();
+  pid('txtLienAdmin').innerHTML   = await GenerationLienAdmmin();
   pid('panLiens').style.display = 'block';
+
+  // Déplacement pour afficher toutes les liens TODO ne fonctionne pas
+  setTimeout(() => smoothScrollToBottom('butAdminAfficherModeAdmin'), 300);
 }
 
 async function GenerationLienID()
 {
   const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
   return (lBase62);
+}
+
+async function GenerationLienFamille()
+{
+  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
+  const lLien = "https://tolliv.github.io/OlySee/index.html?id=" + lBase62;
+  return (lLien);
 }
 
 async function GenerationLienAdmmin()
@@ -243,12 +253,25 @@ async function GenerationLienAdmmin()
   return (lLien);
 }
 
-async function GenerationLienFamille()
-{
-  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
-  const lLien = "https://tolliv.github.io/OlySee/index.html?id=" + lBase62;
-  return (lLien);
+function smoothScrollToBottom(elementId) {
+  const el = pid(elementId);
+  if (!el) return;
+
+  const targetY = el.offsetTop + el.offsetHeight - window.innerHeight;
+
+  // Utilisation de la méthode native mais avec un fallback
+  try {
+    window.scrollTo({
+      top: targetY,
+      behavior: 'smooth'
+    });
+  } catch (e) {
+    // Si le smooth fails (vieux Android), scroll direct
+    window.scrollTo(0, targetY);
+  }
 }
+
+
 
 //--------------------------------------------------------------------------------------------------
 // Gestion des butons de copie de lien et d'affichage
@@ -448,9 +471,9 @@ async function ChargementPositions()
   if (status == "OK")
   {
     longueurPositions = count;
+    gPositions = [];                // Effacement avant la lecture
     if (longueurPositions > 0)
     {
-      gPositions = [];
       let offset = 0;
 
       // Limitation par GET
@@ -901,6 +924,7 @@ function AfficheRattachements()
     indexPosition++;
 
     //----- Définition des limites de recherche -----
+    // TODO actuellement, c'est 1/3 du nombre de points, au lieu de 1/3 de la distance !
     // Cas Début de la rando (entre le début et le tiers de l'itinéraire)
     if (pos.poi == 1)
     {
@@ -930,7 +954,7 @@ function AfficheRattachements()
     pos.numeroItineraire = 0;                           // Numéro de l'itinéraire (pas encore utilisé)
     pos.numeroPointItineraire = indexLePlusProche;      // Numéro du point de l'itinéraire
     pos.distance = Math.sqrt(distanceMin);
-    // console.log("Position " + indexPosition +" -> point " + indexLePlusProche + " (Dist: " + pos.distance.toFixed(3) + " km) " + "POI : " + pos.poi + "  Start=" + lIndexStart + " Stop=" + lIndexStop);
+    console.log("Position " + indexPosition +" -> point " + indexLePlusProche + " (Dist: " + pos.distance.toFixed(3) + " km) " + "POI : " + pos.poi + "  Start=" + lIndexStart + " Stop=" + lIndexStop);
   }
 }
 
