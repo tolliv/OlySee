@@ -527,7 +527,7 @@ async function ChargementPositions()
   }
   else
     lRet = status;
-  return(lRet);
+  return (lRet);
 }
 
 
@@ -920,6 +920,7 @@ function AfficheRattachements()
   for (let p = 0; p < gPositions.length; p++)
   {
     pos = gPositions[p];
+    console.log("lat,lon = " + pos.lat + "," + pos.lon);
     distanceMin = Infinity;
     indexPosition++;
 
