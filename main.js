@@ -229,7 +229,7 @@ async function GenerationLiens()
   pid('txtLienAdmin').innerHTML   = await GenerationLienAdmmin();
   pid('panLiens').style.display = 'block';
 
-  // Déplacement pour afficher toutes les liens TODO ne fonctionne pas
+  // Déplacement pour afficher toutes les liens
   setTimeout(() => smoothScrollToBottom('butAdminAfficherModeAdmin'), 300);
 }
 
@@ -257,7 +257,7 @@ function smoothScrollToBottom(elementId) {
   const el = pid(elementId);
   if (!el) return;
 
-  const targetY = el.offsetTop + el.offsetHeight - window.innerHeight;
+  const targetY = el.offsetTop + el.offsetHeight - window.innerHeight + 50;
 
   // Utilisation de la méthode native mais avec un fallback
   try {
