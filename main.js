@@ -1,8 +1,8 @@
-// v=2611.09a
+// v=2611.10a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.09a";
+const gVersion = "v=2611.10a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
