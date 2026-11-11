@@ -461,13 +461,9 @@ async function getIPlocation()
     const response = await fetch('https://ipwho.is/');
     const data = await response.json();
     if (data.success == true)
-    {
       detailConsultant = data.city + " (" + data.postal + ")";
-    }
     else
-    {
       detailConsultant = "Localisation inconnue";
-    }
   }
   catch (e)
   {
@@ -486,26 +482,31 @@ async function ChargementPositions()
   var longueurPositions = 0;
   var longueurPrev = 0;
 
+  //----- CONSULTATION -----
   // Récupération de la ville de la famille qui consulte
-  const detailConsultant = await getIPlocation();
+//  const detailConsultant = await getIPlocation();
+//  console.log("Consultant: " + detailConsultant);
 
-  console.log("Consultant: " + detailConsultant);
-
-  // Mémorise cette consultation
-  const lDate = DateSupabase();
-  const nouveauPoint =
+  // Mémorise cette consultation si mode famille
+  if (gModeAdmin == false)
   {
-      date: lDate,
-      user: USER,
-      type: 200,
-      msg: detailConsultant
-  };
-  lRet = await SupabaseWrite(nouveauPoint);
-  if (lRet != "OK")
-  {
-    // TODO cas d'erreur
+    console.log("Mémorisation consultation");
+    const lDate = DateSupabase();
+    const nouveauPoint =
+    {
+        date: lDate,
+        user: USER,
+        type: 200,
+        msg: ""
+    };
+    lRet = await SupabaseWrite(nouveauPoint);
+    if (lRet != "OK")
+    {
+      // TODO cas d'erreur
+    }
   }
 
+  //----- POSITIONS -----
   // Compte le nombre de points avant de les charger
   const lCmd = "user=eq." + USER
              + "&type=eq.100"     // Type trace
