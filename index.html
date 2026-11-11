@@ -1,4 +1,4 @@
-<!-- v=2611.10a -->
+<!-- v=2611.11a -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -14,11 +14,11 @@
   <!-- REF EXT STOP -->
 
   <!-- REF INT START -->
-  <script src='map.js?v=2611.10a'> </script>
-  <link rel='stylesheet' type='text/css' href='map.css?v=2611.10a'>
-  <script src='main.js?v=2611.10a'></script>
-  <link rel='stylesheet' type='text/css' href='main.css?v=2611.10a'>
-  <script src='driverSupabase.js?v=2611.10a'></script>
+  <script src='map.js?v=2611.11a'> </script>
+  <link rel='stylesheet' type='text/css' href='map.css?v=2611.11a'>
+  <script src='main.js?v=2611.11a'></script>
+  <link rel='stylesheet' type='text/css' href='main.css?v=2611.11a'>
+  <script src='driverSupabase.js?v=2611.11a'></script>
   <!-- REF INT STOP -->
 
 
@@ -28,7 +28,7 @@
     <!----- PARTIE Informations de connexion pour Admin ----->
     <div id='panDemarrage'>
       <div id='txtTitreOlySee'><b>OlySee</b><br></div>
-      <img id='imgOlySee' src='imgOlySee.png?v=2611.10a'>
+      <img id='imgOlySee' src='imgOlySee.png?v=2611.11a'>
       <div id='txtDemarrage'></div>
 
       <!----- PARTIE Informations de connexion pour Admin ----->
@@ -98,31 +98,46 @@
         <!-- Menu Admin -->
         <div id='panAdminCommandes'>
           <div style='color: #008;'><b>Itinéraire</b></div>
-          <br>
+          <div style='height: 5px;'></div>
           <div class='classAdminSTitre'>Tracé</div>
-            <button id='butAdminCharger' class='classAdminBouton' onclick='ButAdminChargerClick()' style='left: 15px;'>Charger</button>
-            <span id='txtAdminNbPoints' style='position: relative; left: 100px; top: 3px; border: 1px solid #FFF;'></span>
-          <br>
-          <br>
+            <span class='classAdminInfo' id='txtAdminNbPoints' ></span>
+            <button id='butAdminCharger' class='classAdminBouton' onclick='ButAdminChargerClick()'>Charger</button><br>
+            <br>
+          <div id='txtAdminDebug' style='font-size: 0.8em; display: none;'></div>
           <div class='classAdminSTitre'>Nom actuel</div>
-          <input id='txtAdminNomItineraire' class='classAdminInput' type='text' placeholder="">
-          <button id='butAdminModifierNom' class='classAdminBouton' onclick='ButAdminModifierNomClick()'>Modifier</button><br>
-          <br>
-          <div class='classAdminSTitre'>Informations</div>
-          <span class='classAdminInfo'>Itinéraire + Positions</span>
-          <button id='butAdminEffacer' class='classAdminBouton' onclick='ButAdminEffacerClick()'>Effacer</button>
+            <input id='txtAdminNomItineraire' class='classAdminInput' type='text' placeholder="">
+            <button id='butAdminModifierNom' class='classAdminBouton' onclick='ButAdminModifierNomClick()'>Modifier</button><br>
 
-          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 20px;'></div>
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
 
-          <div style='color: #008;'><b>Autres</b></div>
+          <div style='color: #008;'><b>Positions</b></div>
+          <div style='height: 5px;'></div>
+            <span class='classAdminInfo'>Dernière position</span>
+            <button id='butAdminEffacerDernierePosition' class='classAdminBouton' onclick='ButAdminEffacerDernierePositionClick()'>Effacer</button><br>
+
+            <span class='classAdminInfo' id='txtAdminNbPositions'></span>
+            <button id='butAdminEffacerToutesPositions' class='classAdminBouton' onclick='ButAdminEffacerToutesPositionsClick()'>Effacer</button>
+
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
+
+          <div style='color: #008;'><b>Prénom</b></div>
+          <div style='height: 5px;'></div>
+            <input id='txtAdminPrenom' class='classAdminInput' type='text' placeholder="">
+            <button id='butAdminModifierPrenom' class='classAdminBouton' onclick='ButAdminModifierPrenomClick()'>Modifier</button><br>
+
+          <!-- Séparation -->
+          <div style='height: 1px;border-bottom: 1px solid #CCC;margin-top: 20px;margin-bottom: 10px;'></div>
+          <div style='color: #008;'><b>Réinitialiser</b></div>
+          <div style='height: 5px;'></div>
+            <span class='classAdminInfo'>Tout</span>
+            <button id='butAdminEffacerTout' class='classAdminBouton' onclick='ButAdminEffacerToutClick()'>Effacer</button><br>
           <br>
-          <div class='classAdminSTitre'>Prénom</div>
-          <input id='txtAdminPrenom' class='classAdminInput' type='text' placeholder="">
-          <button id='butAdminModifierPrenom' class='classAdminBouton' onclick='ButAdminModifierPrenomClick()'>Modifier</button><br>
           <br>
-          <div id='txtAdminDebug' style='font-size: 0.8em;'></div>
-          <br>
-          La mise à jour sera faite à la fermeture de ce menu.
+          <div id='txtMiseAJour' style='display: none;'>
+          Note : la mise à jour sera faite à la fermeture de ce menu.
+          </div>
         </div>
 
         <!-- Menu pour la carte avec Radio Buttons -->

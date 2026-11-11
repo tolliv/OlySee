@@ -1,4 +1,4 @@
-// v=2611.10a
+// v=2611.11a
 //==================================================================================================
 // Gestion des requêtes pour Supabase
 //==================================================================================================
@@ -8,18 +8,6 @@ var API_URL = "?";
 var API_KEY = "?";
 var USER    = "?";
 var ID      = "?";
-
-//--------------------------------------------------------------------------------------------------
-// Effacement tout ce qui concerne l'utilisateur actuel
-//--------------------------------------------------------------------------------------------------
-async function SupabaseClearAllInformations()
-{
-  const t0 = performance.now();
-  const lCmd = "user=eq." + USER;
-  const lStatus = await SupabaseDelete(lCmd);
-  const delta = Math.round(0.100 * (performance.now() - t0)) / 100;
-  console.log("Suppression " + lStatus + " (" + delta + "s)");
-}
 
 
 //--------------------------------------------------------------------------------------------------
@@ -191,6 +179,68 @@ async function SupabaseEffaceItineraire()
              + "&type=eq.0";
   let lStatus = await SupabaseDelete(lCmd);
   return(lStatus);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Efface la dernière position
+//--------------------------------------------------------------------------------------------------
+async function SupabaseEffaceDernierePosition()
+{
+  // Chercher l'ID ou la date exacte de la ligne la plus récente
+  const lCmdRead = "user=eq." + USER
+                 + "&type=eq.100"
+                 + "&order=date.desc"
+                 + "&limit=1"
+                 + "&select=date";
+  const lRet = await SupabaseRead(lCmdRead);
+
+  if (lRet.status === "OK" && lRet.length > 0)
+  {
+    const dateExacte = lRet.data[0].date;
+
+    // Supprimer cette ligne unique
+    const lCmdDelete = "user=eq." + USER
+                     + "&type=eq.100"
+                     + "&date=eq." + dateExacte;
+    let lStatus = await SupabaseDelete(lCmdDelete);
+    return (lStatus);
+  }
+
+  return ("OK Aucune donnée à supprimer");
+}
+
+//--------------------------------------------------------------------------------------------------
+// Efface toutes les positions
+//--------------------------------------------------------------------------------------------------
+async function SupabaseEffaceToutesPositions()
+{
+  const lCmd = "user=eq." + USER
+             + "&type=eq.100"
+             + "&order=date.desc"
+             + "&limit=1";
+  let lStatus = await SupabaseDelete(lCmd);
+  return(lStatus);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Efface toutes les consultations
+//--------------------------------------------------------------------------------------------------
+async function SupabaseEffaceConsultations()
+{
+  const lCmd = "user=eq." + USER
+             + "&type=eq.200";
+  let lStatus = await SupabaseDelete(lCmd);
+  return(lStatus);
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Effacement tout ce qui concerne l'utilisateur actuel
+//--------------------------------------------------------------------------------------------------
+async function SupabaseClearAllInformations()
+{
+  const lCmd = "user=eq." + USER;
+  const lStatus = await SupabaseDelete(lCmd);
 }
 
 

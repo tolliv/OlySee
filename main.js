@@ -1,8 +1,8 @@
-// v=2611.10a
+// v=2611.11a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.10a";
+const gVersion = "v=2611.11a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -462,6 +462,45 @@ async function ChargementPositions()
   var longueurPositions = 0;
   var longueurPrev = 0;
 
+  // Récupération de la ville de la famille qui consulte
+  let detailConsultant;
+  try
+  {
+    const geoRes = await fetch('http://ip-api.com/json/');
+    const geoData = await geoRes.json();
+    if (geoData.status === "success")
+    {
+      // zip.substring(0,2) permet d'extraire le numéro du département du code postal
+      const departement = geoData.zip ? geoData.zip : geoData.region;
+      detailConsultant = geoData.city + " (" + departement + ")";
+    }
+    else
+    {
+      detailConsultant = "Localisation inconnue";
+    }
+  }
+  catch (e)
+  {
+    detailConsultant += "(quidam)";
+  }
+
+  console.log("Consultant: " + detailConsultant);
+
+  // Mémorise cette consultation
+  const lDate = DateSupabase();
+  const nouveauPoint =
+  {
+      date: lDate,
+      user: USER,
+      type: 200,
+      msg: detailConsultant
+  };
+  lRet = await SupabaseWrite(nouveauPoint);
+  if (lRet != "OK")
+  {
+    // TODO cas d'erreur
+  }
+
   // Compte le nombre de points avant de les charger
   const lCmd = "user=eq." + USER
              + "&type=eq.100"     // Type trace
@@ -527,9 +566,20 @@ async function ChargementPositions()
   }
   else
     lRet = status;
+
+  // Affichage et retour
+  AfficheNbPositions();
   return (lRet);
 }
 
+//--------------------------------------------------------------------------------------------------
+// Affichage nombre de positions dans le panneau admin
+//--------------------------------------------------------------------------------------------------
+function AfficheNbPositions()
+{
+  const nbPositions = gPositions.length;
+  pid('txtAdminNbPositions').innerHTML = S(nbPositions, "point");
+}
 
 //--------------------------------------------------------------------------------------------------
 // Chargement de l'itinéraire depuis la base de données
@@ -920,7 +970,6 @@ function AfficheRattachements()
   for (let p = 0; p < gPositions.length; p++)
   {
     pos = gPositions[p];
-    console.log("lat,lon = " + pos.lat + "," + pos.lon);
     distanceMin = Infinity;
     indexPosition++;
 
@@ -955,7 +1004,7 @@ function AfficheRattachements()
     pos.numeroItineraire = 0;                           // Numéro de l'itinéraire (pas encore utilisé)
     pos.numeroPointItineraire = indexLePlusProche;      // Numéro du point de l'itinéraire
     pos.distance = Math.sqrt(distanceMin);
-    console.log("Position " + indexPosition +" -> point " + indexLePlusProche + " (Dist: " + pos.distance.toFixed(3) + " km) " + "POI : " + pos.poi + "  Start=" + lIndexStart + " Stop=" + lIndexStop);
+//    console.log("Position " + indexPosition +" -> point " + indexLePlusProche + " (Dist: " + pos.distance.toFixed(3) + " km) " + "POI : " + pos.poi + "  Start=" + lIndexStart + " Stop=" + lIndexStop);
   }
 }
 
@@ -1038,6 +1087,7 @@ async function Rafraichir(pMode)
     const lRetChargementPositions  = await ChargementPositions();
     InactivationBoutons();
 
+    if (gItineraire.length > 0) CalculeDistanceTotaleEtParcourue();
     if (gItineraire.length > 0) AfficheRattachements();
     if (gItineraire.length > 0) AfficheItineraire();
 
@@ -1255,17 +1305,23 @@ function ButAdminClick()
     // Nb Points
     pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
 
+    // Debug
+    pid('txtAdminDebug').innerHTML = "";
+
     // Nom itinéraire
     pid('txtAdminNomItineraire').value = gNomItineraire;
+
+    // Nb positions
+    pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
 
     // Prénom
     pid('txtAdminPrenom').value = gPrenom;
 
-    // Debug
-    pid('txtAdminDebug').innerHTML = "";
-
     // Bouton Charger
     pid('butAdminCharger').style.backgroundColor = '#DDD';
+
+    // Texte de mise à jour
+    pid('txtMiseAJour').style.display = 'none';
 
     // Flag pour savoir si on doit rafraichir quand on désactive le menu Admin
     gDoitEtreRafraichi =false;
@@ -1324,6 +1380,7 @@ async function ButAdminModifierNomClick()
   // Affichage
   await sleep(100);
   gDoitEtreRafraichi = true;
+  pid('txtMiseAJour').style.display = 'block';
   pid('butAdminModifierNom').style.backgroundColor = '#DDD';
 }
 
@@ -1346,34 +1403,101 @@ async function ButAdminModifierPrenomClick()
   // Affichage
   await sleep(100);
   gDoitEtreRafraichi = true;
+  pid('txtMiseAJour').style.display = 'block';
   pid('butAdminModifierPrenom').style.backgroundColor = '#DDD';
 }
 
+
 //--------------------------------------------------------------------------------------------------
-// Effacer les informations
+// Effacer Dernière position
 //--------------------------------------------------------------------------------------------------
-async function ButAdminEffacerClick()
+async function ButAdminEffacerDernierePositionClick()
 {
-  pid('butAdminEffacer').style.backgroundColor = '#FC8';
+  pid('butAdminEffacerDernierePosition').style.backgroundColor = '#FC8';
+  await sleep(100);
+
+  if (gPositions.length > 0)
+  {
+    const confirmation = await confirmerAction("Voulez-vous vraiment effacer la dernière position ?");
+    if (confirmation == true)
+    {
+      const lRet = SupabaseEffaceDernierePosition();
+      gPositions.pop();
+      pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+      gDoitEtreRafraichi = true;
+      pid('txtMiseAJour').style.display = 'block';
+    }
+  }
+
+  // Affichage
+  pid('butAdminEffacerDernierePosition').style.backgroundColor = '#DDD';
+}
+
+//--------------------------------------------------------------------------------------------------
+// Effacer toutes les positions
+// On efface aussi les consultations
+//--------------------------------------------------------------------------------------------------
+async function ButAdminEffacerToutesPositionsClick()
+{
+  pid('butAdminEffacerToutesPositions').style.backgroundColor = '#FC8';
+  await sleep(100);
+
+  if (gPositions.length > 0)
+  {
+    const confirmation = await confirmerAction("Voulez-vous vraiment effacer toutes les positions ?");
+    if (confirmation == true)
+    {
+      const lRetConsultations = SupabaseEffaceConsultations();
+      const lRet = SupabaseEffaceToutesPositions();
+      gPositions = [];
+      pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+      gDoitEtreRafraichi = true;
+      pid('txtMiseAJour').style.display = 'block';
+     }
+  }
+
+  // Affichage
+  pid('butAdminEffacerToutesPositions').style.backgroundColor = '#DDD';
+}
+
+//--------------------------------------------------------------------------------------------------
+// Affiche une boîte de dialogue de confirmation générique.
+//--------------------------------------------------------------------------------------------------
+async function confirmerAction(message)
+{
+  return window.confirm(message);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Effacer Tout
+//--------------------------------------------------------------------------------------------------
+async function ButAdminEffacerToutClick()
+{
+  pid('butAdminEffacerTout').style.backgroundColor = '#FC8';
+  await sleep(100);
 
   // Effacement de la base de données
   // Itinéraire
   // Positions
   // Prénom
   // Nom itinéraire
-  SupabaseClearAllInformations();
-
-  // Effacement variables locales
-  gItineraire = [];
-  gPositions = [];
-  pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
-  pid('txtAdminNomItineraire').value = NOM_ITINEAIRE_DEFAUT;
-  pid('txtAdminPrenom').value = PRENOM_DEFAUT;
+  // Consultations
+  const confirmation = await confirmerAction("Voulez-vous vraiment effacer toutes les positions ?");
+  if (confirmation == true)
+  {
+    SupabaseClearAllInformations();
+    gItineraire = [];
+    gPositions = [];
+    pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
+    pid('txtAdminNomItineraire').value = NOM_ITINEAIRE_DEFAUT;
+    pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+    pid('txtAdminPrenom').value = PRENOM_DEFAUT;
+    gDoitEtreRafraichi = true;
+    pid('txtMiseAJour').style.display = 'block';
+  }
 
   // Affichage
-  await sleep(100);
-  gDoitEtreRafraichi = true;
-  pid('butAdminEffacer').style.backgroundColor = '#DDD';
+  pid('butAdminEffacerTout').style.backgroundColor = '#DDD';
 }
 
 
@@ -1504,9 +1628,11 @@ async function LoadGPXSuite(pFileName, gpxContent)
   if (lStatusSupabase !== "OK")
       pid('txtAdminNbPoints').innerHTML = "Erreur écriture nom !";
 
+  gDoitEtreRafraichi = true;
+  pid('txtMiseAJour').style.display = 'block';
+
   // Bouton repasse en gris
   pid('butAdminCharger').style.backgroundColor = '#DDD';
-  gDoitEtreRafraichi = true;
 }
 
 //--------------------------------------------------------------------------------------------------

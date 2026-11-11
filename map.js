@@ -1,4 +1,4 @@
-// v=2611.10a
+// v=2611.11a
 //==================================================================================================
 // Gestion de la carte
 //==================================================================================================
@@ -256,10 +256,13 @@ function AffichePositions()
       // Suivant si on affiche tout ou seulement la dernière position
       if ( (gAffichagePositions == 'all') || ((gAffichagePositions == 'last') && (nb == gPositions.length-1)) )
       {
-        // Icone rattachement sur l'itinéraire
-        const latItineraire = gItineraire[pos.numeroPointItineraire].lat;
-        const lonItineraire = gItineraire[pos.numeroPointItineraire].lon;
-        const rattachement = L.marker([latItineraire, lonItineraire], {icon:iconRattachement, zIndexOffset:-1000}).addTo(map);
+        // Icone rattachement sur l'itinéraire si existant
+        if (gItineraire.length > 0)
+        {
+          const latItineraire = gItineraire[pos.numeroPointItineraire].lat;
+          const lonItineraire = gItineraire[pos.numeroPointItineraire].lon;
+          const rattachement = L.marker([latItineraire, lonItineraire], {icon:iconRattachement, zIndexOffset:-1000}).addTo(map);
+        }
 
         // Icone du POI
         var iconChoisie;
@@ -283,16 +286,29 @@ function AffichePositions()
         if (pos.msg == null)
           lPosMsg = "";
 
-        // Avancement affiché dans la bulle
-        const lPointItineraire = pos.numeroPointItineraire;
-        const lDistanceParcourue = gItineraire[lPointItineraire].distanceParcourue;
-        const lAvancement = Math.floor(100 * lDistanceParcourue / gDistanceTotaleItineraire);
+        // Avancement affiché dans la bulle si possible
+        let lPointItineraire;
+        let lDistanceParcourue, lDistanceRestante;
+        let lAvancement;
+        if (gItineraire.length > 0)
+        {
+          lPointItineraire = pos.numeroPointItineraire;
+          lDistanceParcourue = gItineraire[lPointItineraire].distanceParcourue;
+          lDistanceRestante = gDistanceTotaleItineraire - lDistanceParcourue;
+          lAvancement = Math.floor(100 * lDistanceParcourue / gDistanceTotaleItineraire);
+        }
+        else
+        {
+          lDistanceParcourue = 0;
+          lDistanceRestante = 0;
+          lAvancement = 0;
+        }
 
         let lTexteBulle = "";
         const lDate = FormaterDateRelative(pos.date.toString());
         lTexteBulle += "<span style='font-size: 1.1em; color: #008;'><b>" + lDate.j + " à " + lDate.h + "</b></span>";
         lTexteBulle += "</span>&nbsp;<span style='color: #FFF; background: #008;'><b>&nbsp;" + lAvancement + "<small>%</small>&nbsp;</b></span><br>"
-        lTexteBulle += "<b>Parcouru:</b> " + lDistanceParcourue.toFixed(1) + "km - <b>Restant:</b> " + (gDistanceTotaleItineraire - lDistanceParcourue).toFixed(1) + "km<br>";
+        if (gItineraire.length > 0) lTexteBulle += "<b>Parcouru:</b> " + lDistanceParcourue.toFixed(1) + "km - <b>Restant:</b> " + lDistanceRestante.toFixed(1) + "km<br>";
         lTexteBulle += "<b>Position:</b> " + pos.lat + "," + pos.lon + "&nbsp;+/- " + pos.prec + "m<br>";
         lTexteBulle += "<b>Alt:</b> " + pos.alt + "m<br>";
         lTexteBulle += "<span style='font-size: 11px;'><i>" + lPosMsg + "</i></span>";

@@ -1,4 +1,4 @@
-/* v=2611.10a */
+/* v=2611.11a */
 /*==================================================================================================
   Il y a deux parties :
   #panTopContainer pour la partie haute de l'écran
@@ -153,7 +153,7 @@ HTML, body
   padding: 10px;
   box-shadow: 8px 8px 8px rgba(0, 0, 0, 0.4);
   left: 10px;
-  width: 300px;
+  width: 260px;
   bottom: 10px;
   overflow-y: auto;
 }
@@ -164,7 +164,7 @@ HTML, body
   position: relative;
   margin: 0px;
   padding: 0px;
-  left: 5px;
+  left: 0px;
   width: 140px;
   font-size: 1em;
   font-weight: bold;
@@ -178,9 +178,9 @@ HTML, body
   margin: 0px;
   padding: 0px;
   padding-top: 2px;
-  left: 5px;
+  left: 0px;
   height: 20px;
-  width: 140px;
+  width: 155px;
   border: 1px solid #FFF;
   background-color: #FFF;
 }
@@ -190,8 +190,8 @@ HTML, body
 {
   position: relative;
   margin: 0px;
-  left: 5px;
-  width: 140px;
+  left: 0px;
+  width: 155px;
   color: #000;
   font-family: verdana;
   font-size: 13px;
@@ -201,7 +201,7 @@ HTML, body
 .classAdminBouton
 {
   position: absolute;
-  left: 165px;
+  left: 180px;
   width: 80px;
   font-family: verdana;
   font-size: 13px;
