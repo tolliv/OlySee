@@ -451,6 +451,30 @@ async function ModeCommun()
   }
 }
 
+//--------------------------------------------------------------------------------------------------
+// Récupère le nom de la ville de la famille qui consulte
+//--------------------------------------------------------------------------------------------------
+async function getIPlocation()
+{
+  try
+  {
+    const response = await fetch('https://ipwho.is/');
+    const data = await response.json();
+    if (data.success == true)
+    {
+      detailConsultant = data.city + " (" + data.postal + ")";
+    }
+    else
+    {
+      detailConsultant = "Localisation inconnue";
+    }
+  }
+  catch (e)
+  {
+    detailConsultant += "(quidam)";
+  }
+  return (detailConsultant);
+}
 
 //--------------------------------------------------------------------------------------------------
 // Chargement des positions depuis la base de données
@@ -463,26 +487,7 @@ async function ChargementPositions()
   var longueurPrev = 0;
 
   // Récupération de la ville de la famille qui consulte
-  let detailConsultant;
-  try
-  {
-    const geoRes = await fetch('http://ip-api.com/json/');
-    const geoData = await geoRes.json();
-    if (geoData.status === "success")
-    {
-      // zip.substring(0,2) permet d'extraire le numéro du département du code postal
-      const departement = geoData.zip ? geoData.zip : geoData.region;
-      detailConsultant = geoData.city + " (" + departement + ")";
-    }
-    else
-    {
-      detailConsultant = "Localisation inconnue";
-    }
-  }
-  catch (e)
-  {
-    detailConsultant += "(quidam)";
-  }
+  const detailConsultant = await getIPlocation();
 
   console.log("Consultant: " + detailConsultant);
 
