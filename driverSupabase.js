@@ -1,4 +1,4 @@
-// v=2611.11a
+// v=2611.12a
 //==================================================================================================
 // Gestion des requêtes pour Supabase
 //==================================================================================================
@@ -220,6 +220,19 @@ async function SupabaseEffaceToutesPositions()
              + "&limit=1";
   let lStatus = await SupabaseDelete(lCmd);
   return(lStatus);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Compte le nombre de consultations dans la base de données
+//--------------------------------------------------------------------------------------------------
+async function SupabaseCountConsultations()
+{
+  const lCmd = "user=eq." + USER
+             + "&type=eq.200"     // Type consultations
+             + "&limit=0";        // Ne charge rien
+
+  const lRet = await SupabaseCount(lCmd);
+  return (lRet);
 }
 
 //--------------------------------------------------------------------------------------------------

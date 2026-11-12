@@ -1,8 +1,8 @@
-// v=2611.11a
+// v=2611.12a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.11a";
+const gVersion = "v=2611.12a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -138,9 +138,9 @@ async function Run()
 //--------------------------------------------------------------------------------------------------
 async function InfosConnexion()
 {
-  var txtUsrLocal = "";
-  var txtUrlLocal = "";
-  var txtKeyLocal = "";
+  let txtUsrLocal = "";
+  let txtUrlLocal = "";
+  let txtKeyLocal = "";
 
   // Lecture du local storage
   if (localStorage.getItem('GPXSuivi_usr') != null)
@@ -477,10 +477,10 @@ async function getIPlocation()
 //--------------------------------------------------------------------------------------------------
 async function ChargementPositions()
 {
-  var lRet = "";
-  var htmlInt = "";
-  var longueurPositions = 0;
-  var longueurPrev = 0;
+  let lRet = "";
+  let htmlInt = "";
+  let longueurPositions = 0;
+  let longueurPrev = 0;
 
   //----- CONSULTATION -----
   // Récupération de la ville de la famille qui consulte
@@ -512,7 +512,7 @@ async function ChargementPositions()
              + "&type=eq.100"     // Type trace
              + "&order=id.asc"
              + "&limit=0";        // Ne charge rien
-  var { status, count } = await SupabaseCount(lCmd);
+  let { status, count } = await SupabaseCount(lCmd);
   if (status == "OK")
   {
     longueurPositions = count;
@@ -530,7 +530,7 @@ async function ChargementPositions()
                    + "&order=id.asc"
                    + "&offset=" + offset
                    + "&limit=" + batchSize;
-        var { status, length, data } = await SupabaseRead(lCmd);
+        let { status, length, data } = await SupabaseRead(lCmd);
 
         // Si erreur
         if (status != "OK")
@@ -584,7 +584,7 @@ async function ChargementPositions()
 function AfficheNbPositions()
 {
   const nbPositions = gPositions.length;
-  pid('txtAdminNbPositions').innerHTML = S(nbPositions, "point");
+  pid('txtAdminNbPositions').innerHTML = S(nbPositions, "position");
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -593,10 +593,10 @@ function AfficheNbPositions()
 //--------------------------------------------------------------------------------------------------
 async function ChargementItineraire()
 {
-  var lRet = "";
-  var htmlInt = "";
-  var longueurItineraire = 0;
-  var longueurPrev = 0;
+  let lRet = "";
+  let htmlInt = "";
+  let longueurItineraire = 0;
+  let longueurPrev = 0;
 
   pid('panChargement').style.display = 'block';
 
@@ -608,7 +608,7 @@ async function ChargementItineraire()
              + "&type=eq.0"
              + "&order=id.asc"
              + "&limit=0";        // Ne charge rien
-  var { status, count } = await SupabaseCount(lCmd);
+  let { status, count } = await SupabaseCount(lCmd);
   if (status == "OK")
   {
     longueurItineraire = count;
@@ -629,7 +629,7 @@ async function ChargementItineraire()
                    + "&order=id.asc"
                    + "&offset=" + offset
                    + "&limit=" + batchSize;
-        var { status, length, data } = await SupabaseRead(lCmd);
+        let { status, length, data } = await SupabaseRead(lCmd);
 
         // Si erreur
         if (status != "OK")
@@ -684,9 +684,9 @@ async function ChargementItineraire()
 //--------------------------------------------------------------------------------------------------
 async function ChargementItineraireAdmin_TODELETE() // TODO
 {
-  var lRet = "";
-  var htmlInt = "";
-  var longueurItineraire = 0;
+  let lRet = "";
+  let htmlInt = "";
+  let longueurItineraire = 0;
 
   console.log("Chargement itinéraire admin..");
 
@@ -695,7 +695,7 @@ async function ChargementItineraireAdmin_TODELETE() // TODO
              + "&type=eq.0"
              + "&order=id.asc"
              + "&limit=0";        // Ne charge rien
-  var { status, count } = await SupabaseCount(lCmd);
+  let { status, count } = await SupabaseCount(lCmd);
   if (status == "OK")
   {
     longueurItineraire = count;
@@ -715,7 +715,7 @@ async function ChargementItineraireAdmin_TODELETE() // TODO
                    + "&order=id.asc"
                    + "&offset=" + offset
                    + "&limit=" + batchSize;
-        var { status, length, data } = await SupabaseRead(lCmd);
+        let { status, length, data } = await SupabaseRead(lCmd);
 
         // Si erreur
         if (status != "OK")
@@ -797,7 +797,7 @@ async function AfficheProgression()
   pid('spanDistanceMin').innerHTML = "0km";
   pid('spanDistanceMax').innerHTML = lTotale + "km";
 
-  var p = Math.max(0, Math.min(100, lPourcentage));
+  let p = Math.max(0, Math.min(100, lPourcentage));
 
   // Barre de progression
   pid('progression-fill').style.width = p + '%';
@@ -815,7 +815,7 @@ async function AfficheProgression()
   }
 
   // Si <> 0, On attend la fin de déplacement de la position pour afficher la date
-  var flagFini = false;
+  let flagFini = false;
   if (p > 0)
   {
     pid('imgCurseur').addEventListener('transitionend', () =>
@@ -827,7 +827,7 @@ async function AfficheProgression()
     flagFini = true;
 
   // Attend la fin de l'animation s'il y en a, maximum 1.5 seconde
-  var count = 0;
+  let count = 0;
   for (count = 0; count < 15; count++)
   {
     if (flagFini == true)
@@ -1298,7 +1298,7 @@ function SelectionnerChoixPosition(choix)
 //--------------------------------------------------------------------------------------------------
 // Affiche les commandes admin
 //--------------------------------------------------------------------------------------------------
-function ButAdminClick()
+async function ButAdminClick()
 {
   const but = pid('butAdmin');
 
@@ -1308,8 +1308,17 @@ function ButAdminClick()
     BoutonEtat('butAdmin', 'actif');
 
     //----- Remplissage des champs avant l'affichage -----
+    // Version
+    pid('txtVersion').innerHTML = "<small><i>Version " + gVersion.substring(2, 10) + "</i></small>";
+
+    // Prénom
+    pid('txtAdminPrenom').value = gPrenom;
+
     // Nb Points
     pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
+
+    // Bouton Charger
+    pid('butAdminCharger').style.backgroundColor = '#DDD';
 
     // Debug
     pid('txtAdminDebug').innerHTML = "";
@@ -1318,13 +1327,13 @@ function ButAdminClick()
     pid('txtAdminNomItineraire').value = gNomItineraire;
 
     // Nb positions
-    pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+    pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "position");
 
-    // Prénom
-    pid('txtAdminPrenom').value = gPrenom;
-
-    // Bouton Charger
-    pid('butAdminCharger').style.backgroundColor = '#DDD';
+    // Nb consultations (promesse)
+    SupabaseCountConsultations().then(async (lConsultations) =>
+    {
+      pid('txtAdminNbConsultations').innerHTML = S(lConsultations.count, "consultation");
+    });
 
     // Texte de mise à jour
     pid('txtMiseAJour').style.display = 'none';
@@ -1429,7 +1438,7 @@ async function ButAdminEffacerDernierePositionClick()
     {
       const lRet = SupabaseEffaceDernierePosition();
       gPositions.pop();
-      pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+      pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "position");
       gDoitEtreRafraichi = true;
       pid('txtMiseAJour').style.display = 'block';
     }
@@ -1456,7 +1465,7 @@ async function ButAdminEffacerToutesPositionsClick()
       const lRetConsultations = SupabaseEffaceConsultations();
       const lRet = SupabaseEffaceToutesPositions();
       gPositions = [];
-      pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+      pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "position");
       gDoitEtreRafraichi = true;
       pid('txtMiseAJour').style.display = 'block';
      }
@@ -1464,6 +1473,22 @@ async function ButAdminEffacerToutesPositionsClick()
 
   // Affichage
   pid('butAdminEffacerToutesPositions').style.backgroundColor = '#DDD';
+}
+
+
+//--------------------------------------------------------------------------------------------------
+// Effacer toutes les consultations
+//--------------------------------------------------------------------------------------------------
+async function ButAdminEffacerToutesConsultationsClick()
+{
+  pid('butAdminEffacerToutesConsultations').style.backgroundColor = '#FC8';
+  await sleep(100);
+
+  const lRetConsultations = SupabaseEffaceConsultations();
+  pid('txtAdminNbConsultations').innerHTML = "0 consultation";
+
+  // Affichage
+  pid('butAdminEffacerToutesConsultations').style.backgroundColor = '#DDD';
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1496,7 +1521,7 @@ async function ButAdminEffacerToutClick()
     gPositions = [];
     pid('txtAdminNbPoints').innerHTML = S(gItineraire.length, "point");
     pid('txtAdminNomItineraire').value = NOM_ITINEAIRE_DEFAUT;
-    pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "point");
+    pid('txtAdminNbPositions').innerHTML = S(gPositions.length, "position");
     pid('txtAdminPrenom').value = PRENOM_DEFAUT;
     gDoitEtreRafraichi = true;
     pid('txtMiseAJour').style.display = 'block';
@@ -1651,13 +1676,13 @@ function parseGpxToCoords(xmlContent)
   const trackPoints = xmlDoc.querySelectorAll("trkpt");
   const coords = [];
 
-  var lNb = 0;
+  let lNb = 0;
   const lDate = DateSupabase();   // Même date pour tous les points
   trackPoints.forEach(pt =>
   {
     const lat = parseFloat(pt.getAttribute("lat"));
     const lon = parseFloat(pt.getAttribute("lon"));
-    var alt = parseFloat(pt.getAttribute("alt"));
+    let alt = parseFloat(pt.getAttribute("alt"));
 
     // Remaplacement si altitude inexistante
     if (isNaN(alt))
@@ -1696,7 +1721,7 @@ async function ButAdminTstAddPoint()
 {
   //----- Parcourt l'itinéraire pour ajouter une position -----
   const increment = Math.floor(gItineraire.length / 9);
-  var nb = 0;
+  let nb = 0;
   for (let i = 0; i < (gItineraire.length - 0*increment); i++)
   {
 
@@ -1715,7 +1740,7 @@ async function ButAdminTstAddPoint()
       {
         console.log("add nb = " + nb);
 
-        var lLigne = {...gItineraire[i]};
+        let lLigne = {...gItineraire[i]};
           console.log("Coordonnées mémorisées: ", lLigne.lat, lLigne.lon);
 
         // POINT 1
@@ -1857,7 +1882,7 @@ function SimulationPoints()
 {
   const increment = Math.floor(gItineraire.length / 9);
   gPositions = [];
-  var nb = 0;
+  let nb = 0;
   for (let i = 0; i < (gItineraire.length - 0*increment); i++)
   {
     if (i%increment == 0)
@@ -1865,7 +1890,7 @@ function SimulationPoints()
       nb++;
 
       // Crée un nouvel élément
-      var lLigne = {...gItineraire[i]};
+      let lLigne = {...gItineraire[i]};
 
       // POI
                    {lLigne.poi = 2; }
