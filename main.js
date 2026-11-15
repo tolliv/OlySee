@@ -1,8 +1,8 @@
-// v=2611.12a
+// v=2611.15a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.12a";
+const gVersion = "v=2611.15a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -143,12 +143,12 @@ async function InfosConnexion()
   let txtKeyLocal = "";
 
   // Lecture du local storage
-  if (localStorage.getItem('GPXSuivi_usr') != null)
-    txtUsrLocal = localStorage.getItem('GPXSuivi_usr');
-  if (localStorage.getItem('GPXSuivi_url') != null)
-    txtUrlLocal = localStorage.getItem('GPXSuivi_url');
-  if (localStorage.getItem('GPXSuivi_key') != null)
-    txtKeyLocal = localStorage.getItem('GPXSuivi_key');
+  if (localStorage.getItem('OlySee_usr') != null)
+    txtUsrLocal = localStorage.getItem('OlySee_usr');
+  if (localStorage.getItem('OlySee_url') != null)
+    txtUrlLocal = localStorage.getItem('OlySee_url');
+  if (localStorage.getItem('OlySee_key') != null)
+    txtKeyLocal = localStorage.getItem('OlySee_key');
 
   pid('txtUsr').value = txtUsrLocal;
   pid('txtUrl').value = txtUrlLocal;
@@ -196,9 +196,9 @@ async function ValiderAdmin()
       break;
 
     // Sauvegarde dans le local storage
-    localStorage.setItem('GPXSuivi_usr', USER);
-    localStorage.setItem('GPXSuivi_url', API_URL);
-    localStorage.setItem('GPXSuivi_key', API_KEY);
+    localStorage.setItem('OlySee_usr', USER);
+    localStorage.setItem('OlySee_url', API_URL);
+    localStorage.setItem('OlySee_key', API_KEY);
     GenerationLiens();
     flagOk = true;
   } while (0);
@@ -235,7 +235,7 @@ async function GenerationLiens()
 
 async function GenerationLienID()
 {
-  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
+  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 1);
   return (lBase62);
 }
 
