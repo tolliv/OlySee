@@ -122,7 +122,7 @@ async function main()
 
     const lIndiceNew = String.fromCharCode(lIndiceRef.charCodeAt(0) + 1);
     const lNewDateRef = lDayNew + lIndiceNew;
-    console.log("Nouvelle date      " + lNewDateRef);
+    console.log("Nouvelle date      " + GREEN + lNewDateRef + RESET);
     await replaceInDir("./", lDateRef, lNewDateRef).then(() =>
     {
         return;
@@ -133,7 +133,7 @@ async function main()
   else
   {
     const lNewDateRef = lDayNew + "a";
-    console.log("Nouvelle date      " + lNewDateRef);
+    console.log("Nouvelle date      " + GREEN + lNewDateRef + RESET);
     await replaceInDir("./", lDateRef, lNewDateRef).then(() =>
     {
         return;

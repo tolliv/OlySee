@@ -1,8 +1,8 @@
-// v=2611.15b
+// v=2611.18d
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.15b";
+const gVersion = "v=2611.18d";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -1215,14 +1215,14 @@ function ChoixCarte()
 //--------------------------------------------------------------------------------------------------
 // Partager l'adresse du site
 //--------------------------------------------------------------------------------------------------
-function Partager()
+async function Partager()
 {
-  const msg = "Suivez mon parcours sur GPX.Suivi :";
-  const texte = "https://tolliv.github.io/GPX.Suivi/index.html?"
-            + "id=" + ID
+  const msg = "Suivi de " + gPrenom + " : ";
+  const Lienfamille = await GenerationLienFamille();
 
   BoutonEtat('butPartager', 'actif');
-  setTimeout(() => {
+  setTimeout(() =>
+  {
     BoutonEtat('butPartager', 'inactif');
   }, 500);
 
@@ -1230,13 +1230,15 @@ function Partager()
   {
     navigator.share(
     {
-      title: "GPX.Suivi",
+      title: msg,
       text: msg,
-      url: texte
+      url: Lienfamille
     })
     .then(() => console.log("Partage réussi"))
     .catch((error) => console.log("Erreur de partage", error));
   }
+
+  // Pas de fonction accessible de partage
   else
   {
     // On crée une simple boîte de dialogue avec prompt (natif et rapide)
@@ -1244,17 +1246,20 @@ function Partager()
     // Utilisation du presse-papier si disponible
     if (navigator.clipboard)
     {
-      navigator.clipboard.writeText(url).then(() =>
+      navigator.clipboard.writeText(Lienfamille).then(() =>
       {
-        alert("Lien copié dans le presse-papier !\n\n" + texte);
+        alert("Lien copié dans le presse-papier :\n\n" + Lienfamille);
       }).catch(() =>
       {
         // Si la copie automatique échoue, on affiche le lien pour copie manuelle
-        window.prompt(msg, texte);
+        window.prompt(msg, Lienfamille);
       });
-    } else
+    }
+
+    // Pas de function accessible de presse papier
+    else
     {
-      window.prompt(msg, texte);
+      window.prompt(msg, Lienfamille);
     }
   }
 }
