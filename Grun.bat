@@ -1,3 +1,4 @@
+:: 2611.18a
 @echo off
 :: Change l'encodage de la console en UTF-8
 chcp 65001 > nul

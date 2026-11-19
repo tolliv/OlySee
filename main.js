@@ -1,8 +1,8 @@
-// v=2611.18h
+// v=2611.19a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.18h";
+const gVersion = "v=2611.19a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -20,7 +20,43 @@ var gNomItineraire = NOM_ITINEAIRE_DEFAUT;
 var gDoitEtreRafraichi = false;
 var gPassageCntAdmin = 0;
 
+//----- Installation du Service Worker -----
+if ('serviceWorker' in navigator)
+{
+  // updateViaCache: 'none' force le navigateur à ignorer son cache HTTP
+  const registrationPromise = navigator.serviceWorker.register('./sw.js',
+  {
+    updateViaCache: 'none'
+  });
+
+  registrationPromise.then(registration =>
+  {
+    // Force une vérification de mise à jour à chaque chargement de la page
+    registration.update();
+
+    // Updatefound
+    registration.addEventListener('updatefound', () =>
+    {
+      console.log('Nouvelle version du service worker trouvée, installation en cours.');
+      pid('txtVersionFuture').innerHTML += "Installation en cours<br>";
+
+      const newWorker = registration.installing;
+      newWorker.addEventListener('statechange', () =>
+      {
+        if (newWorker.state === 'installed')
+        {
+          console.log('installed');
+          pid('txtVersionFuture').innerHTML += "Nouvelle version installée<br>";
+        }
+      });
+    });
+  }).catch(error =>
+  {
+  });
+}
+
 //----- Démarrage de l'application -----
+
 document.addEventListener('DOMContentLoaded', function()
 {
   observer.observe(pid('panBottomContainer'));
@@ -56,7 +92,6 @@ function pid(id)
 // Sleep
 //--------------------------------------------------------------------------------------------------
 const sleep = ms => new Promise(res => setTimeout(res, ms));
-
 
 //--------------------------------------------------------------------------------------------------
 // Date au format Supabase compacté par tolliv
