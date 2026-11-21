@@ -1,8 +1,8 @@
-// v=2611.19a
+// v=2611.21a
 //==================================================================================================
 // OlySee : fichier principal
 //==================================================================================================
-const gVersion = "v=2611.19a";
+const gVersion = "v=2611.21a";
 const NOM_ITINEAIRE_DEFAUT = "(aucun itinéraire)";
 const PRENOM_DEFAUT = "Toto";
 var gItineraire = [];
@@ -20,40 +20,6 @@ var gNomItineraire = NOM_ITINEAIRE_DEFAUT;
 var gDoitEtreRafraichi = false;
 var gPassageCntAdmin = 0;
 
-//----- Installation du Service Worker -----
-if ('serviceWorker' in navigator)
-{
-  // updateViaCache: 'none' force le navigateur à ignorer son cache HTTP
-  const registrationPromise = navigator.serviceWorker.register('./sw.js',
-  {
-    updateViaCache: 'none'
-  });
-
-  registrationPromise.then(registration =>
-  {
-    // Force une vérification de mise à jour à chaque chargement de la page
-    registration.update();
-
-    // Updatefound
-    registration.addEventListener('updatefound', () =>
-    {
-      console.log('Nouvelle version du service worker trouvée, installation en cours.');
-      pid('txtVersionFuture').innerHTML += "Installation en cours<br>";
-
-      const newWorker = registration.installing;
-      newWorker.addEventListener('statechange', () =>
-      {
-        if (newWorker.state === 'installed')
-        {
-          console.log('installed');
-          pid('txtVersionFuture').innerHTML += "Nouvelle version installée<br>";
-        }
-      });
-    });
-  }).catch(error =>
-  {
-  });
-}
 
 //----- Démarrage de l'application -----
 
@@ -270,21 +236,21 @@ async function GenerationLiens()
 
 async function GenerationLienID()
 {
-  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 1);
+  const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
   return (lBase62);
 }
 
 async function GenerationLienFamille()
 {
   const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 0);
-  const lLien = "https://tolliv.github.io/OlySee/index.html?id=" + lBase62;
+  const lLien = gServerOlySee + "index.html?id=" + lBase62;
   return (lLien);
 }
 
 async function GenerationLienAdmmin()
 {
   const lBase62 = await encodeSupabaseConfig(API_URL, API_KEY, USER, 1);
-  const lLien = "https://tolliv.github.io/OlySee/index.html?admin=" + lBase62;
+  const lLien = gServerOlySee + "index.html?admin=" + lBase62;
   return (lLien);
 }
 
